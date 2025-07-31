@@ -2,20 +2,24 @@
 #include"Dxlib.h"
 #include"Game.h"
 
-SceneMain::SceneMain()
+SceneMain::SceneMain():
+	m_player1(nullptr),
+	m_player2(nullptr)
 {
+
 }
 
 SceneMain::~SceneMain()
 {
+
 }
 
 void SceneMain::Init()
 {
 	m_player1 = new Player();	// プレイヤーのインスタンスを生成	
 	m_player2 = new Player();	
-	m_player1->Init();// 初期化
-	m_player2->Init();	// プレイヤーの初期化
+	m_player1->Init(DX_INPUT_PAD1,Vec2(240,480));// 初期化
+	m_player2->Init(DX_INPUT_PAD2,Vec2(480, 480));	// プレイヤーの初期化
 }
 
 void SceneMain::End()

@@ -18,6 +18,7 @@ namespace
 }
 
 Player::Player():
+	m_padType(0),
 	m_radius(0.0f),
 	m_isTurn(false)
 {
@@ -27,8 +28,9 @@ Player::~Player()
 {
 }
 
-void Player::Init(int _padType)
+void Player::Init(int _padType, Vec2 _firstPos)
 {
+	m_pos = _firstPos;
 	m_padType = _padType;
 	m_radius = kDefaultRadius;
 	m_isTurn = false;
@@ -40,12 +42,17 @@ void Player::End()
 
 void Player::Update()
 {
-
 	//	コントローラーのボタンの押された状態を取得する
-	m_padType = GetJoypadInputState(DX_INPUT_PAD1);
-	if (m_padType & PAD_INPUT_DOWN)
+	int input = GetJoypadInputState(m_padType);
+
+	//	コントローラーの十字キーの押された状態を取得する
+	if (input == PAD_INPUT_LEFT)
 	{
-		m_pos.y += kSpeed;
+		m_pos.x -= kSpeed;
+	}
+	if (input == PAD_INPUT_RIGHT)
+	{
+		m_pos.x += kSpeed;
 	}
 }
 

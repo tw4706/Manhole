@@ -6,7 +6,7 @@ public:
 	Player();
 	~Player();
 
-	void Init(int _padType);
+	void Init(int _padType,Vec2 _firstPos);
 	void End();
 	void Update();
 	void Draw();
