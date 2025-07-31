@@ -13,6 +13,8 @@ public:
 
 private:
 
+	int m_player1GraphHandle; // プレイヤー1のグラフィックハンドル
+	int m_player2GraphHandle; // プレイヤー2のグラフィックハンドル
 	// プレイヤー
 	Player*m_player1;
 	Player*m_player2;
