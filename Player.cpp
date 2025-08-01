@@ -20,6 +20,10 @@ namespace
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
 	constexpr int  kSpeed = 2;
+	// 重力
+	constexpr float kGravity = 1.5f;
+	// 地面の当たり判定
+	constexpr int kGround = 530;
 
 }
 
@@ -34,11 +38,12 @@ Player::Player():
 
 Player::~Player()
 {
+
 }
 
-void Player::Init(int _padType, Vec2 _firstPos,int handle)
+void Player::Init(int _padType, Vec2 _firstPos,int _handle)
 {
-	m_handle = handle;
+	m_handle = _handle;
 	m_pos = _firstPos;
 	m_padType = _padType;
 	m_radius = kDefaultRadius;
@@ -51,11 +56,19 @@ void Player::End()
 
 void Player::Update()
 {
+	
 	// アニメーションの更新
 	m_animFrame++;
 	if (m_animFrame >= kIdleAnimNum * kAnimWaitFrame)
 	{
 		m_animFrame = 0;
+	}
+
+	Gravity();
+
+	if (m_pos.y >= kGround)
+	{
+		m_pos.y = kGround;
 	}
 
 	//	コントローラーのボタンの押された状態を取得する
@@ -65,10 +78,12 @@ void Player::Update()
 	if (input & PAD_INPUT_LEFT)
 	{
 		m_pos.x -= kSpeed;
+		m_isTurn = true; // 左に移動したら向きを左にする
 	}
 	if (input & PAD_INPUT_RIGHT)
 	{
 		m_pos.x += kSpeed;
+		m_isTurn = false; // 右に移動したら向きを右にする
 	}
 }
 
@@ -80,12 +95,34 @@ void Player::Draw()
 	// アニメーションの進行に合わせてグラフィックの切り取り位置を変更する
 	int srcX = kGraphWidth * animNum;
 	int srcY = 0;
+	if (m_padType==DX_INPUT_PAD1)
+	{
+		DrawRectGraph(m_pos.x - kGraphWidth / 2,
+			m_pos.y - kGraphHeight / 2,
+			srcX, srcY,
+			kGraphWidth, kGraphHeight,
+			m_handle, true, false
+		);
+	}
+	else
+	{
+		DrawRectGraph(m_pos.x - kGraphWidth / 2,
+			m_pos.y - kGraphHeight / 2,
+			srcX, srcY,
+			kGraphWidth, kGraphHeight,
+			m_handle, true, true
+		);
+	}
+	/*DrawRectGraph(m_pos.x - kGraphWidth / 2,
+				m_pos.y - kGraphHeight / 2,
+				srcX, srcY,
+				kGraphWidth, kGraphHeight,
+				m_handle, true,true
+				);*/
+}
 
-	DrawRectGraph(m_pos.x - kGraphWidth / 2,
-		m_pos.y - kGraphHeight / 2,
-		srcX, srcY,
-		kGraphWidth, kGraphHeight,
-		m_handle, true, m_isTurn
-	);
-//	DrawCircle(m_pos.x, m_pos.y, m_radius, GetColor(255, 255, 0),true);
+void Player::Gravity()
+{
+	// 重力を追加する
+	m_pos.y += kGravity;
 }
