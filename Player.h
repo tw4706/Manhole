@@ -6,10 +6,12 @@ public:
 	Player();
 	~Player();
 
-	void Init(int _padType,Vec2 _firstPos,int handle);
+	void Init(int _padType,Vec2 _firstPos,int _handle);
 	void End();
 	void Update();
 	void Draw();
+	void Gravity();
+
 
 private:
 

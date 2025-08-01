@@ -26,6 +26,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// 描画対象をバックバッファに変更
 	SetDrawScreen(DX_SCREEN_BACK);
 
+	int temp = LoadGraph("data/Player1.idle.png");
+
 	SceneMain scene;
 	scene.Init();
 

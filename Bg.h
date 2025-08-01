@@ -1,16 +1,15 @@
 #pragma once
-class Ground
+class Bg
 {
 public:
-	Ground();
-	~Ground();
+	Bg();
+	~Bg();
 
 	void Init();
 	void End();
 	void Update();
-	void Draw();	
+	void Draw();
 
 private:
-
 };
 

@@ -1,5 +1,6 @@
 #pragma once
 #include"Player.h"
+#include"Bg.h"
 class SceneMain
 {
 public:
@@ -12,11 +13,17 @@ public:
 	void Draw();
 
 private:
+	// プレイヤーのグラフィックハンドル
+	int m_player1GraphHandle; 
+	int m_player2GraphHandle;
+	// プレイヤーの攻撃グラフィックハンドル
+	int m_player1AttackGraphHandle; 
+	int m_player2AttackGraphHandle;
 
-	int m_player1GraphHandle; // プレイヤー1のグラフィックハンドル
-	int m_player2GraphHandle; // プレイヤー2のグラフィックハンドル
 	// プレイヤー
 	Player*m_player1;
 	Player*m_player2;
+	// 背景
+	Bg*m_bg;
 };
 
