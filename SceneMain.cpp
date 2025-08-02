@@ -8,6 +8,9 @@ SceneMain::SceneMain():
 	m_player2GraphHandle(-1),
 	m_player1AttackGraphHandle(-1),
 	m_player2AttackGraphHandle(-1),
+	m_player1RunGraphHandle(-1),
+	m_player2RunGraphHandle(-1),
+	m_bgGraphHandle(-1),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_bg(nullptr)
@@ -30,12 +33,13 @@ void SceneMain::Init()
 	m_player2GraphHandle = LoadGraph("data/Player2.idle.png");
 	m_player1AttackGraphHandle = LoadGraph("data/Player1.attack.png");
 	m_player2AttackGraphHandle = LoadGraph("data/Player2.attack.png");
+	m_player1RunGraphHandle = LoadGraph("data/Player1.run.png");
+	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
+//	m_bgGraphHandle = LoadGraph("data/bg.png");
 	// ‰Šú‰»
-	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle);
-	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle);
+	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle,m_player1RunGraphHandle);
+	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2RunGraphHandle);
 	m_bg->Init(m_bgGraphHandle);
-	
-	
 }
 
 void SceneMain::End()
@@ -48,6 +52,8 @@ void SceneMain::End()
 	DeleteGraph(m_player2GraphHandle);
 	DeleteGraph(m_player1AttackGraphHandle);
 	DeleteGraph(m_player2AttackGraphHandle);
+	DeleteGraph(m_player1RunGraphHandle);
+	DeleteGraph(m_player2RunGraphHandle);
 	DeleteGraph(m_bgGraphHandle);
 }
 
@@ -61,7 +67,8 @@ void SceneMain::Update()
 
 void SceneMain::Draw()
 {
+	// •`‰æ(Œã‚É•`‰æ‚µ‚½‚à‚Ì‚ª‘O‚Éo‚é)
+	m_bg->Draw();
 	m_player1->Draw();
 	m_player2->Draw();	// ƒvƒŒƒCƒ„[‚Ì•`‰æˆ—
-	m_bg->Draw();
 }

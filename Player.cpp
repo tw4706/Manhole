@@ -13,9 +13,11 @@ namespace
 	// プレイヤーグラフィックのサイズ
 	constexpr int kGraphWidth = 48;
 	constexpr int kGraphHeight = 48;
-	// アニメーション情報
+	// 待機アニメーション情報
 	constexpr int kIdleAnimNum = 4;
 	constexpr int kAnimWaitFrame = 4;
+	// 走るアニメーション情報
+	constexpr int kRunAnimNum = 6;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
@@ -30,6 +32,7 @@ namespace
 Player::Player():
 	m_handle(-1),
 	m_attackHandle(-1),
+	m_runHandle(-1),
 	m_padType(0),
 	m_radius(0.0f),
 	m_isAttack(false),
@@ -45,10 +48,11 @@ Player::~Player()
 
 }
 
-void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle)
+void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int _runHandle)
 {
 	m_handle = _handle;
 	m_attackHandle = _attackHandle;
+	m_runHandle = _runHandle;
 	m_pos = _firstPos;
 	m_padType = _padType;
 	m_radius = kDefaultRadius;
@@ -63,15 +67,20 @@ void Player::End()
 
 void Player::Update()
 {
-	
+	bool isMoving = false;
+	Gravity();
+
 	// アニメーションの更新
-	m_animFrame++;
-	if (m_animFrame >= kIdleAnimNum * kAnimWaitFrame)
-	{
+	int animNum = 0;
+	int animFrames = (m_state == PlayerState::Run) ? kRunAnimNum : kIdleAnimNum;
+
+	// フレームを状態に応じて計算
+	animNum = (m_animFrame / kAnimWaitFrame) % animFrames;
+
+	// アニメーションフレームのリセット
+	if (++m_animFrame >= (animFrames * kAnimWaitFrame)) {
 		m_animFrame = 0;
 	}
-
-	Gravity();
 
 	if (m_pos.y >= kGround)
 	{
@@ -80,15 +89,44 @@ void Player::Update()
 
 	//	コントローラーのボタンの押された状態を取得する
 	int input = GetJoypadInputState(m_padType);
+	
 
 	// プレイヤーの状態
-	if (input & PAD_INPUT_A)
+	if (input == DX_INPUT_PAD2)
+	{
+		m_isTurn = false; // 右側のプレイヤーは常に右向き
+	}
+
+	// 移動処理
+
+	if (input & PAD_INPUT_LEFT && !(input & PAD_INPUT_RIGHT))
+	{
+		m_pos.x -= kSpeed;
+		m_isTurn = true;
+		isMoving = true;
+		
+	}
+	if (input & PAD_INPUT_RIGHT && !(input & PAD_INPUT_LEFT))
+	{
+		m_pos.x += kSpeed;
+		m_isTurn = false;
+		isMoving = true;
+		
+	}
+	if (!isMoving) 
+	{
+		
+	}
+	DrawFormatString(10, 10, GetColor(255, 255, 255), "isMoving: %d", isMoving); // 更新後の値表示
+
+	// 状態判定
+	if (m_isAttack&&input & PAD_INPUT_A)
 	{
 		m_state = PlayerState::Attack;
 		m_attackCount = 0;
 		m_isAttack = true;
 	}
-	else if (input & PAD_INPUT_LEFT || input & PAD_INPUT_RIGHT)
+	else if (isMoving)
 	{
 		m_state = PlayerState::Run;
 	}
@@ -96,18 +134,21 @@ void Player::Update()
 	{
 		m_state = PlayerState::Idle;
 	}
+
+
+	//プレイヤーの状態の処理分岐
 	switch (m_state)
 	{
 	case PlayerState::Idle:
 			// 通常状態の処理
 			break;
 	case PlayerState::Run:
-		if (input & PAD_INPUT_LEFT)
+		if (input & PAD_INPUT_LEFT&& !(input & PAD_INPUT_RIGHT))
 		{
 			m_pos.x -= kSpeed;
 			m_isTurn = true; // 左に移動したら向きを左にする
 		}
-		if (input & PAD_INPUT_RIGHT)
+		if (input & PAD_INPUT_RIGHT && !(input & PAD_INPUT_LEFT))
 		{
 			m_pos.x += kSpeed;
 			m_isTurn = false; // 右に移動したら向きを右にする
@@ -115,64 +156,62 @@ void Player::Update()
 		break;
 	case PlayerState::Attack:
 		m_attackCount++;	//攻撃のカウントを進める
-		if (m_attackCount > 20) 
+		if (m_attackCount > 60) 
 		{
+			// 攻撃状態を終了
+			m_isAttack = false; 
 			// 攻撃が終わったら通常状態に戻す
 			m_state = PlayerState::Idle; 
-			m_isAttack = false; // 攻撃状態を終了
 		}
 		break;
-
 	}
-
-
-	// 攻撃モーション
 
 }
 
 void Player::Draw()
 {
 	// アニメーションのフレーム数から表示したいコマ番号を計算で求める
-	int animNum = m_animFrame / kAnimWaitFrame;
-	int srcX = kGraphWidth * animNum;
+	int animNum = 0;
+	//// プレイヤーのそれぞれの状態をもとにX座標を計算する
+	int srcX = 0;
 	int srcY = 0;
 	int handle = m_handle;
+
+
 	switch (m_state)
 	{
-		case PlayerState::Idle:
-			// 待機モーション
-			srcY = 0;
-			handle = m_handle;
-			break;
-		case PlayerState::Run:
-			// 移動モーション
-			srcY = kGraphHeight;
-			handle = m_handle;
-			break;
-		case PlayerState::Attack:
-			// 攻撃モーション
-			srcY = kGraphHeight * 2;
-			handle = m_attackHandle;
-			break;
+	case PlayerState::Idle:
+		animNum = (m_animFrame / kAnimWaitFrame) % kIdleAnimNum;
+		handle = m_handle;
+		srcY = 0;
+		break;
+
+	case PlayerState::Run:
+		animNum = (m_animFrame / kAnimWaitFrame) % kRunAnimNum;
+		handle = m_runHandle;
+		srcY = kGraphHeight;
+		break;
+
+	case PlayerState::Attack:
+		animNum = (m_animFrame / kAnimWaitFrame) % kIdleAnimNum;
+		handle = m_attackHandle;
+		srcY = 0;
+		break;
 	}
-	if (m_padType==DX_INPUT_PAD1)
+
+	srcX = kGraphWidth * animNum;
+	if (handle != -1)
 	{
-		DrawRectGraph(m_pos.x - kGraphWidth / 2,
+		DrawRectGraph(
+			m_pos.x - kGraphWidth / 2,
 			m_pos.y - kGraphHeight / 2,
 			srcX, srcY,
 			kGraphWidth, kGraphHeight,
-			m_handle, true, false
+			handle, TRUE
 		);
 	}
-	else
-	{
-		DrawRectGraph(m_pos.x - kGraphWidth / 2,
-			m_pos.y - kGraphHeight / 2,
-			srcX, srcY,
-			kGraphWidth, kGraphHeight,
-			m_handle, true, true
-		);
-	}
+	// デバッグ表示（状態とアニメーション番号）
+	DrawFormatString(10, 190, GetColor(255, 255, 255), "Current State: %d", m_state);
 }
 
 void Player::Gravity()
