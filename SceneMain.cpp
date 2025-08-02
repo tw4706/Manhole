@@ -31,9 +31,9 @@ void SceneMain::Init()
 	m_player1AttackGraphHandle = LoadGraph("data/Player1.attack.png");
 	m_player2AttackGraphHandle = LoadGraph("data/Player2.attack.png");
 	// 初期化
-	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle);
-	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle);
-	m_bg->Init();
+	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle);
+	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle);
+	m_bg->Init(m_bgGraphHandle);
 	
 	
 }
@@ -43,6 +43,12 @@ void SceneMain::End()
 	m_player1->End();	// 終了処理
 	m_player2->End();	// プレイヤーの終了処理
 	m_bg->End();
+	// グラフィックの解放
+	DeleteGraph(m_player1GraphHandle);
+	DeleteGraph(m_player2GraphHandle);
+	DeleteGraph(m_player1AttackGraphHandle);
+	DeleteGraph(m_player2AttackGraphHandle);
+	DeleteGraph(m_bgGraphHandle);
 }
 
 void SceneMain::Update()
