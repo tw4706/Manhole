@@ -14,7 +14,7 @@ public:
 	Player();
 	~Player();
 
-	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle);
+	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle,int _runHandle);
 	void End();
 	void Update();
 	void Draw();
@@ -25,6 +25,7 @@ private:
 
 	int m_handle;		// グラフィックのハンドル
 	int m_attackHandle;	// 攻撃のグラフィックのハンドル
+	int m_runHandle;	// 走るグラフィックのハンドル
 	Vec2 m_pos;			// 座標
 	int m_padType;		// パッドの種類
 	float m_radius;		// 当たり判定の半径
