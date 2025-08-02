@@ -19,6 +19,8 @@ private:
 	// プレイヤーの攻撃グラフィックハンドル
 	int m_player1AttackGraphHandle; 
 	int m_player2AttackGraphHandle;
+	// 背景のグラフィックハンドル
+	int m_bgGraphHandle;
 
 	// プレイヤー
 	Player*m_player1;
