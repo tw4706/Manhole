@@ -18,7 +18,12 @@ public:
 	void End();
 	void Update();
 	void Draw();
-	void Gravity();
+	void Gravity();	// 重力
+
+	void State(int _input);	// プレイヤーの状態管理
+	bool IsMoving(int _input);	// プレイヤーの移動
+	void PlayerAnimation();	// プレイヤーのアニメーション管理
+
 
 
 private:
