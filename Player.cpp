@@ -18,6 +18,10 @@ namespace
 	constexpr int kAnimWaitFrame = 4;
 	// 走るアニメーション情報
 	constexpr int kRunAnimNum = 6;
+	// プレイヤーの攻撃アニメーション情報
+	constexpr int kAttackAnimNum = 6;
+	// プレイヤーの攻撃クールタイム
+	constexpr int kAttackCoolTime = 30;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
@@ -67,103 +71,18 @@ void Player::End()
 
 void Player::Update()
 {
-	bool isMoving = false;
 	Gravity();
+	//	コントローラーのボタンの押された状態を取得する
+	int input = GetJoypadInputState(m_padType);
+	// プレイヤーの状態の更新
+	State(input);
+	// プレイヤーのアニメーションの更新
+	PlayerAnimation();
 
-	// アニメーションの更新
-	int animNum = 0;
-	int animFrames = (m_state == PlayerState::Run) ? kRunAnimNum : kIdleAnimNum;
-
-	// フレームを状態に応じて計算
-	animNum = (m_animFrame / kAnimWaitFrame) % animFrames;
-
-	// アニメーションフレームのリセット
-	if (++m_animFrame >= (animFrames * kAnimWaitFrame)) {
-		m_animFrame = 0;
-	}
 
 	if (m_pos.y >= kGround)
 	{
 		m_pos.y = kGround;
-	}
-
-	//	コントローラーのボタンの押された状態を取得する
-	int input = GetJoypadInputState(m_padType);
-	
-
-	// プレイヤーの状態
-	if (input == DX_INPUT_PAD2)
-	{
-		m_isTurn = false; // 右側のプレイヤーは常に右向き
-	}
-
-	// 移動処理
-
-	if (input & PAD_INPUT_LEFT && !(input & PAD_INPUT_RIGHT))
-	{
-		m_pos.x -= kSpeed;
-		m_isTurn = true;
-		isMoving = true;
-		
-	}
-	if (input & PAD_INPUT_RIGHT && !(input & PAD_INPUT_LEFT))
-	{
-		m_pos.x += kSpeed;
-		m_isTurn = false;
-		isMoving = true;
-		
-	}
-	if (!isMoving) 
-	{
-		
-	}
-	DrawFormatString(10, 10, GetColor(255, 255, 255), "isMoving: %d", isMoving); // 更新後の値表示
-
-	// 状態判定
-	if (m_isAttack&&input & PAD_INPUT_A)
-	{
-		m_state = PlayerState::Attack;
-		m_attackCount = 0;
-		m_isAttack = true;
-	}
-	else if (isMoving)
-	{
-		m_state = PlayerState::Run;
-	}
-	else
-	{
-		m_state = PlayerState::Idle;
-	}
-
-
-	//プレイヤーの状態の処理分岐
-	switch (m_state)
-	{
-	case PlayerState::Idle:
-			// 通常状態の処理
-			break;
-	case PlayerState::Run:
-		if (input & PAD_INPUT_LEFT&& !(input & PAD_INPUT_RIGHT))
-		{
-			m_pos.x -= kSpeed;
-			m_isTurn = true; // 左に移動したら向きを左にする
-		}
-		if (input & PAD_INPUT_RIGHT && !(input & PAD_INPUT_LEFT))
-		{
-			m_pos.x += kSpeed;
-			m_isTurn = false; // 右に移動したら向きを右にする
-		}
-		break;
-	case PlayerState::Attack:
-		m_attackCount++;	//攻撃のカウントを進める
-		if (m_attackCount > 60) 
-		{
-			// 攻撃状態を終了
-			m_isAttack = false; 
-			// 攻撃が終わったら通常状態に戻す
-			m_state = PlayerState::Idle; 
-		}
-		break;
 	}
 
 }
@@ -175,7 +94,7 @@ void Player::Draw()
 	//// プレイヤーのそれぞれの状態をもとにX座標を計算する
 	int srcX = 0;
 	int srcY = 0;
-	int handle = m_handle;
+	int handle = -1;
 
 
 	switch (m_state)
@@ -189,33 +108,123 @@ void Player::Draw()
 	case PlayerState::Run:
 		animNum = (m_animFrame / kAnimWaitFrame) % kRunAnimNum;
 		handle = m_runHandle;
-		srcY = kGraphHeight;
+		srcY = 0;
 		break;
 
 	case PlayerState::Attack:
-		animNum = (m_animFrame / kAnimWaitFrame) % kIdleAnimNum;
+		animNum = (m_animFrame / kAnimWaitFrame) % kAttackAnimNum;
 		handle = m_attackHandle;
 		srcY = 0;
 		break;
 	}
 
 	srcX = kGraphWidth * animNum;
+
+
 	if (handle != -1)
 	{
+		if (m_padType == PAD_INPUT_2)
+		{
+			// プレイヤー2のときは向きを反転させる
+			m_isTurn = false;
+		}
 		DrawRectGraph(
 			m_pos.x - kGraphWidth / 2,
 			m_pos.y - kGraphHeight / 2,
 			srcX, srcY,
 			kGraphWidth, kGraphHeight,
-			handle, TRUE
+			handle, TRUE, m_isTurn
 		);
 	}
 	// デバッグ表示（状態とアニメーション番号）
-	DrawFormatString(10, 190, GetColor(255, 255, 255), "Current State: %d", m_state);
+	static PlayerState prevStateForDebug = m_state;
+	if (prevStateForDebug != m_state) {
+		DrawFormatString(10, 80, GetColor(255, 0, 0), "State Changed: %d -> %d", prevStateForDebug, m_state);
+		prevStateForDebug = m_state;
+	}
 }
 
 void Player::Gravity()
 {
 	// 重力を追加する
 	m_pos.y += kGravity;
+}
+
+void Player::State(int _input)
+{
+	PlayerState prevState = m_state; // 現在の状態を一時保存
+
+	switch (m_state) {
+	case PlayerState::Idle:
+		if (!m_isAttack && IsMoving(_input)) {
+			m_state = PlayerState::Run;
+		}
+		else if (!m_isAttack && (_input & PAD_INPUT_A)) {
+			m_state = PlayerState::Attack;
+			m_attackCount = 0;
+			m_isAttack = true;
+			printfDx("攻撃した！\n");
+		}
+		break;
+
+	case PlayerState::Run:
+		// 移動処理
+		if (_input & PAD_INPUT_LEFT && !(_input & PAD_INPUT_RIGHT)) {
+			m_pos.x -= kSpeed;
+			m_isTurn = true;
+		}
+		if (_input & PAD_INPUT_RIGHT && !(_input & PAD_INPUT_LEFT)) {
+			m_pos.x += kSpeed;
+			m_isTurn = false;
+		}
+
+		if (!IsMoving(_input)) {
+			m_state = PlayerState::Idle;
+		}
+		break;
+
+	case PlayerState::Attack:
+		m_attackCount++;
+		if (m_attackCount > kAttackCoolTime) {
+			m_isAttack = false;
+			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
+		}
+		break;
+	}
+
+	// 状態が切り替わったらアニメーションのフレームをリセット
+	if (prevState != m_state) {
+		m_animFrame = 0;
+	}
+
+
+}
+
+bool Player::IsMoving(int _input)
+{
+	return (_input & PAD_INPUT_LEFT) || (_input & PAD_INPUT_RIGHT);
+
+}
+
+void Player::PlayerAnimation()
+{
+	int animFrames = 0;
+	switch (m_state)
+	{
+	case PlayerState::Idle:
+		animFrames = kIdleAnimNum;
+		break;
+	case PlayerState::Run:
+		animFrames = kRunAnimNum;
+		break;
+	case PlayerState::Attack:
+		animFrames = kAttackAnimNum;
+		break;
+	}
+
+	if (++m_animFrame >= animFrames * kAnimWaitFrame)
+	{
+		m_animFrame = 0;
+	}
+
 }
