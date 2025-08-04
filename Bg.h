@@ -13,7 +13,8 @@ public:
 private:
 	// 背景のハンドル
 	int m_handle;
-	// グラフィックが横に何個チップがあるかの情報
+	// グラフィックが縦横に何個チップがあるかの情報
 	int m_graphChipNumX;
+	int m_graphChipNumY;
 };
 
