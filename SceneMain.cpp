@@ -2,6 +2,7 @@
 #include"Dxlib.h"
 #include"Game.h"
 #include "Bg.h"
+#include<cmath>
 
 SceneMain::SceneMain():
 	m_player1GraphHandle(-1),
@@ -63,6 +64,7 @@ void SceneMain::Update()
 	m_player1->Update();
 	m_player2->Update();
 	m_bg->Update();
+	UpdateGame();
 }
 
 void SceneMain::Draw()
@@ -71,4 +73,30 @@ void SceneMain::Draw()
 	m_bg->Draw();
 	m_player1->Draw();
 	m_player2->Draw();	// プレイヤーの描画処理
+	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));
+}
+
+void SceneMain::UpdateGame()
+{
+	const float Player1X = m_player1->GetPosX();
+	const float Player1Y = m_player1->GetPosY();
+	const float Player1Radius = m_player1->GetPosRadius();
+	
+	const float Player2X = m_player2->GetPosX();
+	const float Player2Y = m_player2->GetPosY();
+	const float Player2Radius = m_player2->GetPosRadius();
+
+	// 距離の計算
+	float distX = Player1X - Player2X;
+	float distY = Player1Y - Player2Y;
+
+	float dist = (distX * distX) + (distY * distY);
+	// 距離
+	dist = sqrtf(dist);
+
+	if (dist < (Player1Radius + Player2Radius))
+	{
+		printfDx("あたっている！\n");
+	}
+
 }
