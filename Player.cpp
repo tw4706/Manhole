@@ -75,9 +75,9 @@ void Player::Update()
 	//	コントローラーのボタンの押された状態を取得する
 	int input = GetJoypadInputState(m_padType);
 	// プレイヤーの状態の更新
-	State(input);
+	Updatestate(input);
 	// プレイヤーのアニメーションの更新
-	PlayerAnimation();
+	UpdateAnim();
 
 
 	if (m_pos.y >= kGround)
@@ -94,7 +94,7 @@ void Player::Draw()
 	//// プレイヤーのそれぞれの状態をもとにX座標を計算する
 	int srcX = 0;
 	int srcY = 0;
-	int handle = -1;
+	int handle = m_handle;
 
 
 	switch (m_state)
@@ -123,11 +123,6 @@ void Player::Draw()
 
 	if (handle != -1)
 	{
-		if (m_padType == PAD_INPUT_2)
-		{
-			// プレイヤー2のときは向きを反転させる
-			m_isTurn = false;
-		}
 		DrawRectGraph(
 			m_pos.x - kGraphWidth / 2,
 			m_pos.y - kGraphHeight / 2,
@@ -136,11 +131,13 @@ void Player::Draw()
 			handle, TRUE, m_isTurn
 		);
 	}
-	// デバッグ表示（状態とアニメーション番号）
-	static PlayerState prevStateForDebug = m_state;
-	if (prevStateForDebug != m_state) {
-		DrawFormatString(10, 80, GetColor(255, 0, 0), "State Changed: %d -> %d", prevStateForDebug, m_state);
-		prevStateForDebug = m_state;
+	// 当たり判定の表示
+	DrawCircle(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y), static_cast<int>(m_radius), GetColor(255, 0, 0), FALSE);
+	// デバッグ表示
+	static PlayerState testState= m_state;
+	if (testState != m_state) {
+		DrawFormatString(10, 80, GetColor(255, 0, 0), "State Changed: %d -> %d", testState, m_state);
+		testState = m_state;
 	}
 }
 
@@ -150,7 +147,7 @@ void Player::Gravity()
 	m_pos.y += kGravity;
 }
 
-void Player::State(int _input)
+void Player::Updatestate(int _input)
 {
 	PlayerState prevState = m_state; // 現在の状態を一時保存
 
@@ -206,7 +203,7 @@ bool Player::IsMoving(int _input)
 
 }
 
-void Player::PlayerAnimation()
+void Player::UpdateAnim()
 {
 	int animFrames = 0;
 	switch (m_state)

@@ -20,10 +20,19 @@ public:
 	void Draw();
 	void Gravity();	// 重力
 
-	void State(int _input);	// プレイヤーの状態管理
-	bool IsMoving(int _input);	// プレイヤーの移動
-	void PlayerAnimation();	// プレイヤーのアニメーション管理
+	// 当たり判定の情報
+	float GetPosX() const { return m_pos.x; }	// X座標を取得
+	float GetPosY() const { return m_pos.y; }	// Y座標を取得
+	float GetPosRadius() const { return m_radius; }	// 半径を取得
 
+	void Updatestate(int _input);	// プレイヤーの状態管理
+	bool IsMoving(int _input);	// プレイヤーの移動
+	void UpdateAnim();	// プレイヤーのアニメーション管理
+
+
+	// アドバイス:関数は動詞から始める
+	//　UpdateAnim
+	//　UpdateState
 
 
 private:
