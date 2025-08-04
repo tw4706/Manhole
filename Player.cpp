@@ -189,7 +189,7 @@ void Player::Updatestate(int _input)
 		break;
 	}
 
-	// 状態が切り替わったらアニメーションのフレームをリセット
+	// 状態が切り替わったらアニメーションフレームをリセット
 	if (prevState != m_state) {
 		m_animFrame = 0;
 	}

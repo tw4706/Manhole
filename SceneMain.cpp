@@ -36,7 +36,7 @@ void SceneMain::Init()
 	m_player2AttackGraphHandle = LoadGraph("data/Player2.attack.png");
 	m_player1RunGraphHandle = LoadGraph("data/Player1.run.png");
 	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
-//	m_bgGraphHandle = LoadGraph("data/bg.png");
+	m_bgGraphHandle = LoadGraph("data/Bg.png");
 	// ‰Šú‰»
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle,m_player1RunGraphHandle);
 	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2RunGraphHandle);
