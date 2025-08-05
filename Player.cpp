@@ -18,32 +18,48 @@ namespace
 	constexpr int kAnimWaitFrame = 4;
 	// 走るアニメーション情報
 	constexpr int kRunAnimNum = 6;
-	// プレイヤーの攻撃アニメーション情報
+	// 攻撃アニメーション情報
 	constexpr int kAttackAnimNum = 6;
+	// 弱攻撃のアニメーション情報
+	constexpr int kWeakAttackAnimNum = 8;
+	// 攻撃を受けた時のアニメーション情報
+	constexpr int kHurtAnimNum = 2;	
 	// プレイヤーの攻撃クールタイム
-	constexpr int kAttackCoolTime = 30;
+	constexpr int kAttackCoolTime = 20;
+	// 攻撃を受けた後の無敵時間
+	constexpr int kHurtDuration = 20;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
 	constexpr int  kSpeed = 2;
+	// プレイヤーの拡大率
+	constexpr float kScale = 2.0f;
+	// ノックバックの距離
+	constexpr int knockBackDist = 50;
 	// 重力
 	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
-	constexpr int kGround = 530;
+	constexpr int kGround = 400;
 
 }
 
 Player::Player():
 	m_handle(-1),
 	m_attackHandle(-1),
+	m_wAttackHandle(-1),
 	m_runHandle(-1),
+	m_hurtHandle(-1),
 	m_padType(0),
 	m_radius(0.0f),
 	m_isAttack(false),
 	m_attackCount(0),
+	m_wAttackCount(0),
+	m_hurtCount(0),
 	m_isTurn(false),
 	m_animFrame(0),
-	m_state(PlayerState::Idle)
+	m_oldInput(0),
+	m_state(PlayerState::Idle),
+	m_otherPlayer(nullptr)
 {
 }
 
@@ -52,17 +68,24 @@ Player::~Player()
 
 }
 
-void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int _runHandle)
+void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int _lAttackHandle,int _runHandle,int _hurtHandle,bool _isTurn)
 {
+	// 初期化
 	m_handle = _handle;
 	m_attackHandle = _attackHandle;
+	m_wAttackHandle = _attackHandle;
 	m_runHandle = _runHandle;
+	m_hurtHandle = _hurtHandle;
 	m_pos = _firstPos;
 	m_padType = _padType;
 	m_radius = kDefaultRadius;
 	m_isAttack = false;
 	m_attackCount = 0;
-	m_isTurn = false;
+	m_wAttackCount = 0;
+	m_hurtCount = 0;
+	m_isTurn = _isTurn;
+	m_animFrame = 0;
+	m_oldInput = 0;
 }
 
 void Player::End()
@@ -71,6 +94,7 @@ void Player::End()
 
 void Player::Update()
 {
+	// 重力
 	Gravity();
 	//	コントローラーのボタンの押された状態を取得する
 	int input = GetJoypadInputState(m_padType);
@@ -78,8 +102,7 @@ void Player::Update()
 	Updatestate(input);
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
-
-
+	// 重力の制限
 	if (m_pos.y >= kGround)
 	{
 		m_pos.y = kGround;
@@ -96,7 +119,7 @@ void Player::Draw()
 	int srcY = 0;
 	int handle = m_handle;
 
-
+	// プレイヤーの状態に応じてアニメーションのハンドルを設定
 	switch (m_state)
 	{
 	case PlayerState::Idle:
@@ -116,29 +139,51 @@ void Player::Draw()
 		handle = m_attackHandle;
 		srcY = 0;
 		break;
+
+	case PlayerState::WeakAttack:
+		animNum = (m_animFrame / kAnimWaitFrame) % kWeakAttackAnimNum;
+		handle = m_wAttackHandle;
+		srcY = 0;
+		break;
+
+	case PlayerState::Hurt:
+		animNum = (m_animFrame / kAnimWaitFrame) % kHurtAnimNum;
+		handle = m_hurtHandle;
+		srcY = 0;
+		break;
 	}
 
 	srcX = kGraphWidth * animNum;
 
-
+	// プレイヤーの描画処理
 	if (handle != -1)
 	{
-		DrawRectGraph(
-			m_pos.x - kGraphWidth / 2,
-			m_pos.y - kGraphHeight / 2,
-			srcX, srcY,
-			kGraphWidth, kGraphHeight,
-			handle, TRUE, m_isTurn
-		);
+		if (m_isTurn) 
+		{ 
+			// 左向き
+			DrawRectExtendGraph(
+				static_cast<int>(m_pos.x) + 96, static_cast<int>(m_pos.y),
+				static_cast<int>(m_pos.x), static_cast<int>(m_pos.y) + 96,
+				srcX, srcY,
+				48, 48,
+				handle, TRUE);
+		}
+		else 
+		{
+			// 右向き
+			DrawRectExtendGraph(
+				static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
+				static_cast<int>(m_pos.x) + 96, static_cast<int>(m_pos.y) + 96,
+				srcX, srcY,
+				48, 48,
+				handle, TRUE);
+		}
 	}
 	// 当たり判定の表示
-	DrawCircle(static_cast<int>(m_pos.x), static_cast<int>(m_pos.y), static_cast<int>(m_radius), GetColor(255, 0, 0), FALSE);
-	// デバッグ表示
-	static PlayerState testState= m_state;
-	if (testState != m_state) {
-		DrawFormatString(10, 80, GetColor(255, 0, 0), "State Changed: %d -> %d", testState, m_state);
-		testState = m_state;
-	}
+	DrawCircle(static_cast<int>(m_pos.x)+kGraphWidth, 
+		static_cast<int>(m_pos.y)+kGraphHeight, 
+		static_cast<int>(m_radius), 
+		GetColor(255, 0, 0), FALSE);
 }
 
 void Player::Gravity()
@@ -147,16 +192,25 @@ void Player::Gravity()
 	m_pos.y += kGravity;
 }
 
+// プレイヤーの状態を更新する関数
 void Player::Updatestate(int _input)
 {
-	PlayerState prevState = m_state; // 現在の状態を一時保存
+	// プレイヤーの状態を保存
+	PlayerState saveState = m_state; // プレイヤーの状態を保存
+	int input = GetJoypadInputState(m_padType);
+	bool attackTrigger = (input & PAD_INPUT_A) && !(m_oldInput & PAD_INPUT_A);
+	bool weakAttackTrigger = (input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
 
-	switch (m_state) {
+	// プレイヤーの状態を更新する
+	switch (m_state) 
+	{
 	case PlayerState::Idle:
-		if (!m_isAttack && IsMoving(_input)) {
+		if (!m_isAttack && IsMoving(_input))
+		{
 			m_state = PlayerState::Run;
 		}
-		else if (!m_isAttack && (_input & PAD_INPUT_A)) {
+		else if (!m_isAttack && (_input & PAD_INPUT_A)) 
+		{
 			m_state = PlayerState::Attack;
 			m_attackCount = 0;
 			m_isAttack = true;
@@ -166,43 +220,94 @@ void Player::Updatestate(int _input)
 
 	case PlayerState::Run:
 		// 移動処理
-		if (_input & PAD_INPUT_LEFT && !(_input & PAD_INPUT_RIGHT)) {
+		if (_input & PAD_INPUT_LEFT && !(_input & PAD_INPUT_RIGHT)) 
+		{
 			m_pos.x -= kSpeed;
 			m_isTurn = true;
 		}
-		if (_input & PAD_INPUT_RIGHT && !(_input & PAD_INPUT_LEFT)) {
+		if (_input & PAD_INPUT_RIGHT && !(_input & PAD_INPUT_LEFT)) 
+		{
 			m_pos.x += kSpeed;
 			m_isTurn = false;
 		}
-
-		if (!IsMoving(_input)) {
+		if (!IsMoving(_input)) 
+		{
 			m_state = PlayerState::Idle;
 		}
 		break;
 
 	case PlayerState::Attack:
 		m_attackCount++;
-		if (m_attackCount > kAttackCoolTime) {
+
+		// 攻撃
+		// 押した瞬間判定する
+		if (!m_isAttack && attackTrigger)
+		{
+			m_state = PlayerState::Attack;
+			m_attackCount = 0;
+			m_isAttack = true;
+			printfDx("攻撃！\n");
+		}
+
+		// 前回の入力状態を更新
+		m_oldInput = input; 
+		if (m_attackCount == 1)
+		{
+			// 最初のフレームで攻撃の判定を行う
+			KnockBack();
+		}
+
+		// 攻撃のカウントがクールタイムを超えたら
+		if (m_attackCount > kAttackCoolTime) 
+		{
 			m_isAttack = false;
 			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
+			// 攻撃カウントをリセット
+			m_attackCount = 0; 
 		}
 		break;
+	case PlayerState::WeakAttack:
+		if (!m_isAttack && weakAttackTrigger)
+		{
+			m_state = PlayerState::WeakAttack;
+			m_attackCount = 0;
+			m_isAttack = true;
+			printfDx("弱パンチ！\n");
+		}
+
+		break;
+	case PlayerState::Hurt:
+		if (m_state == PlayerState::Hurt)
+		{
+			m_hurtCount++;
+			if (m_hurtCount > kHurtDuration) 
+			{
+				m_state = PlayerState::Idle;
+				m_hurtCount = 0;
+			}
+			// 無敵時間中は何もしない
+			return;
+		}
 	}
 
+
 	// 状態が切り替わったらアニメーションフレームをリセット
-	if (prevState != m_state) {
+	if (saveState != m_state) 
+	{
 		m_animFrame = 0;
 	}
 
 
 }
 
+// プレイヤーの移動反転処理
 bool Player::IsMoving(int _input)
 {
 	return (_input & PAD_INPUT_LEFT) || (_input & PAD_INPUT_RIGHT);
 
 }
 
+// プレイヤーのアニメーション
 void Player::UpdateAnim()
 {
 	int animFrames = 0;
@@ -217,6 +322,9 @@ void Player::UpdateAnim()
 	case PlayerState::Attack:
 		animFrames = kAttackAnimNum;
 		break;
+	case PlayerState::Hurt:
+		animFrames = kHurtAnimNum;
+		break;
 	}
 
 	if (++m_animFrame >= animFrames * kAnimWaitFrame)
@@ -224,4 +332,35 @@ void Player::UpdateAnim()
 		m_animFrame = 0;
 	}
 
+}
+
+//プレイヤーの攻撃(ノックバック)処理
+void Player::KnockBack()
+{
+	if (!m_otherPlayer) return;
+
+	float dx = m_otherPlayer->m_pos.x - m_pos.x;
+	float dy = m_otherPlayer->m_pos.y - m_pos.y;
+	float distSq = dx * dx + dy * dy;
+	float hitRadius = m_radius + m_otherPlayer->m_radius;
+
+	if (distSq <= hitRadius * hitRadius)
+	{
+		// 攻撃方向でノックバック
+		if (m_isTurn)
+		{
+			// プレイヤーが左向きなら左にノックバック
+			m_otherPlayer->m_pos.x -= knockBackDist;
+		}
+		else
+		{
+			// プレイヤーが右向きなら右にノックバック
+			m_otherPlayer->m_pos.x += knockBackDist;
+		}
+		// 攻撃対象の状態を Hurt に変更
+		m_otherPlayer->m_state = PlayerState::Hurt;
+		// ノックバック時のアニメーションフレームをリセット
+		m_otherPlayer->m_animFrame = 0; 
+		printfDx("ノックバック!\n");
+	}
 }

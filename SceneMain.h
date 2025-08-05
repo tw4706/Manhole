@@ -21,9 +21,15 @@ private:
 	// プレイヤーの攻撃グラフィックハンドル
 	int m_player1AttackGraphHandle; 
 	int m_player2AttackGraphHandle;
+	// プレイヤーの弱攻撃グラフィックハンドル
+	int m_player1WeakAttackGraphHandle;
+	int m_player2WeakAttackGraphHandle;
 	// プレイヤーの走るグラフィックハンドル
 	int m_player1RunGraphHandle;	
 	int m_player2RunGraphHandle;
+	// プレイヤーの攻撃を受けた時のハンドル
+	int m_player1HurtGraphHandle;
+	int m_player2HurtGraphHandle;
 	// 背景のグラフィックハンドル
 	int m_bgGraphHandle;
 
