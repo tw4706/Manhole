@@ -9,6 +9,8 @@ SceneMain::SceneMain():
 	m_player2GraphHandle(-1),
 	m_player1AttackGraphHandle(-1),
 	m_player2AttackGraphHandle(-1),
+	m_player1WeakAttackGraphHandle(-1),
+	m_player2WeakAttackGraphHandle(-1),
 	m_player1RunGraphHandle(-1),
 	m_player2RunGraphHandle(-1),
 	m_player1HurtGraphHandle(-1),
@@ -34,17 +36,17 @@ void SceneMain::Init()
 	//グラフィックの読み込み
 	m_player1GraphHandle = LoadGraph("data/Player1.idle.png");
 	m_player2GraphHandle = LoadGraph("data/Player2.idle.png");
-	m_player1AttackGraphHandle = LoadGraph("data/Player1.attack.png");
+	m_player1AttackGraphHandle = LoadGraph("data/Player1.weak.png");
 	m_player2AttackGraphHandle = LoadGraph("data/Player2.attack.png");
-	m_player1WeakAttackGraphHandle = LoadGraph("data/Player1.weak_attack.png");
-	m_player2WeakAttackGraphHandle = LoadGraph("data/Player2.weak_attack.png");
+	m_player1WeakAttackGraphHandle = LoadGraph("data/Player1.attack.png");
+	m_player2WeakAttackGraphHandle = LoadGraph("data/Player2.weak.png");
 	m_player1RunGraphHandle = LoadGraph("data/Player1.run.png");
 	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
 	m_player1HurtGraphHandle = LoadGraph("data/Player1.hurt.png");
 	m_player2HurtGraphHandle = LoadGraph("data/Player2.hurt.png");
 	m_bgGraphHandle = LoadGraph("data/Bg.png");
-	// 初期化
-	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle,m_player1WeakAttackGraphHandle,m_player1RunGraphHandle,m_player1HurtGraphHandle,false);
+
+	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle, m_player1WeakAttackGraphHandle,m_player1RunGraphHandle,m_player1HurtGraphHandle,false);
 	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2WeakAttackGraphHandle, m_player2RunGraphHandle, m_player2HurtGraphHandle,true);
 	m_bg->Init(m_bgGraphHandle);
 }

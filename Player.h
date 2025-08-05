@@ -10,6 +10,13 @@ enum class PlayerState
 	Hurt,		// 攻撃を受けた
 };
 
+enum class AttackType
+{
+	None,		// 攻撃なし
+	Normal,		// 強攻撃
+	Weak,		// 弱攻撃
+};;
+
 class Player
 {
 public:
@@ -42,22 +49,23 @@ public:
 
 private:
 
-	int m_handle;			// グラフィックのハンドル
-	int m_attackHandle;		// 強攻撃のグラフィックのハンドル
-	int m_wAttackHandle;	// 弱攻撃のグラフィックのハンドル
-	int m_runHandle;		// 走るグラフィックのハンドル
-	int m_hurtHandle;		// 攻撃を受けた時のグラフィックのハンドル
-	Vec2 m_pos;				// 座標
-	int m_padType;			// パッドの種類
-	float m_radius;			// 当たり判定の半径
-	bool m_isAttack;		// 攻撃中かどうか
-	int m_attackCount;		// 攻撃のカウント
-	int m_wAttackCount;		// 弱攻撃のカウント
-	int m_hurtCount;		// 攻撃を受けたカウント
-	bool m_isTurn;			// 左右反転
-	int m_animFrame;		// アニメーションのフレーム
-	int m_oldInput;			// 前回の入力	
-	PlayerState m_state;	// プレイヤーの状態
-	Player* m_otherPlayer;	// 対戦相手のプレイヤー(攻撃の対象となる)
+	int m_handle;				// グラフィックのハンドル
+	int m_attackHandle;			// 強攻撃のグラフィックのハンドル
+	int m_wAttackHandle;		// 弱攻撃のグラフィックのハンドル
+	int m_runHandle;			// 走るグラフィックのハンドル
+	int m_hurtHandle;			// 攻撃を受けた時のグラフィックのハンドル
+	Vec2 m_pos;					// 座標
+	int m_padType;				// パッドの種類
+	float m_radius;				// 当たり判定の半径
+	bool m_isAttack;			// 攻撃中かどうか
+	int m_attackCount;			// 攻撃のカウント
+	int m_wAttackCount;			// 弱攻撃のカウント
+	int m_hurtCount;			// 攻撃を受けたカウント
+	bool m_isTurn;				// 左右反転
+	int m_animFrame;			// アニメーションのフレーム
+	int m_oldInput;				// 前回の入力	
+	PlayerState m_state;		// プレイヤーの状態
+	AttackType m_attackType;	// 攻撃の種類
+	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)
 };
 
