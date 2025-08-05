@@ -11,6 +11,8 @@ SceneMain::SceneMain():
 	m_player2AttackGraphHandle(-1),
 	m_player1RunGraphHandle(-1),
 	m_player2RunGraphHandle(-1),
+	m_player1HurtGraphHandle(-1),
+	m_player2HurtGraphHandle(-1),
 	m_bgGraphHandle(-1),
 	m_player1(nullptr),
 	m_player2(nullptr),
@@ -34,12 +36,16 @@ void SceneMain::Init()
 	m_player2GraphHandle = LoadGraph("data/Player2.idle.png");
 	m_player1AttackGraphHandle = LoadGraph("data/Player1.attack.png");
 	m_player2AttackGraphHandle = LoadGraph("data/Player2.attack.png");
+	m_player1WeakAttackGraphHandle = LoadGraph("data/Player1.weak_attack.png");
+	m_player2WeakAttackGraphHandle = LoadGraph("data/Player2.weak_attack.png");
 	m_player1RunGraphHandle = LoadGraph("data/Player1.run.png");
 	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
+	m_player1HurtGraphHandle = LoadGraph("data/Player1.hurt.png");
+	m_player2HurtGraphHandle = LoadGraph("data/Player2.hurt.png");
 	m_bgGraphHandle = LoadGraph("data/Bg.png");
 	// 初期化
-	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle,m_player1RunGraphHandle);
-	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2RunGraphHandle);
+	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle,m_player1WeakAttackGraphHandle,m_player1RunGraphHandle,m_player1HurtGraphHandle,false);
+	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2WeakAttackGraphHandle, m_player2RunGraphHandle, m_player2HurtGraphHandle,true);
 	m_bg->Init(m_bgGraphHandle);
 }
 
@@ -53,8 +59,12 @@ void SceneMain::End()
 	DeleteGraph(m_player2GraphHandle);
 	DeleteGraph(m_player1AttackGraphHandle);
 	DeleteGraph(m_player2AttackGraphHandle);
+	DeleteGraph(m_player1WeakAttackGraphHandle);
+	DeleteGraph(m_player2WeakAttackGraphHandle);
 	DeleteGraph(m_player1RunGraphHandle);
 	DeleteGraph(m_player2RunGraphHandle);
+	DeleteGraph(m_player1HurtGraphHandle);
+	DeleteGraph(m_player2HurtGraphHandle);
 	DeleteGraph(m_bgGraphHandle);
 }
 
@@ -63,6 +73,8 @@ void SceneMain::Update()
 	// プレイヤーの処理の更新
 	m_player1->Update();
 	m_player2->Update();
+	m_player1->SetOtherPlayer(m_player2);
+	m_player2->SetOtherPlayer(m_player1);
 	m_bg->Update();
 	UpdateGame();
 }
