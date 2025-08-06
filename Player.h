@@ -8,6 +8,7 @@ enum class PlayerState
 	Attack,		// 強攻撃
 	WeakAttack,	// 弱攻撃
 	Hurt,		// 攻撃を受けた
+	Stun,		// 硬直時間
 };
 
 enum class AttackType
@@ -34,7 +35,7 @@ public:
 	float GetPosY() const { return m_pos.y; }	// Y座標を取得
 	float GetPosRadius() const { return m_radius; }	// 半径を取得
 
-	void Updatestate(int _input);	// プレイヤーの状態管理
+	void UpdateState(int _input);	// プレイヤーの状態管理
 	bool IsMoving(int _input);	// プレイヤーの移動
 	void UpdateAnim();	// プレイヤーのアニメーション管理
 	// 攻撃対象の取得
@@ -61,6 +62,7 @@ private:
 	int m_attackCount;			// 攻撃のカウント
 	int m_wAttackCount;			// 弱攻撃のカウント
 	int m_hurtCount;			// 攻撃を受けたカウント
+	int m_stunCount;			// 硬直時間のカウント
 	bool m_isTurn;				// 左右反転
 	int m_animFrame;			// アニメーションのフレーム
 	int m_oldInput;				// 前回の入力	

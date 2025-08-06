@@ -3,6 +3,7 @@
 #include"Game.h"
 #include "Bg.h"
 #include<cmath>
+#include "Manhole.h"
 
 SceneMain::SceneMain():
 	m_player1GraphHandle(-1),
@@ -110,7 +111,7 @@ void SceneMain::UpdateGame()
 
 	if (dist < (Player1Radius + Player2Radius))
 	{
-		printfDx("‚ ‚½‚Á‚Ä‚¢‚éI\n");
+		//printfDx("‚ ‚½‚Á‚Ä‚¢‚éI\n");
 	}
 
 }
