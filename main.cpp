@@ -14,7 +14,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// ウインドウモード設定
 	ChangeWindowMode(true);
 	// ウインドウのタイトル変更
-	SetMainWindowText("ゲーム名");
+	SetMainWindowText("ManholeFight");
 	// 画面のサイズ変更
 	SetGraphMode(Game::kScreenWidth, Game::kScreenHeight, Game::kColorBitNum);
 

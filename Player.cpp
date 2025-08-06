@@ -30,6 +30,8 @@ namespace
 	constexpr int kWeakAttackCoolTime = 30;
 	// 攻撃を受けた後の無敵時間
 	constexpr int kHurtDuration = 20;
+	// 弱攻撃を受けた後の無敵時間
+	constexpr int kWeakHurtDuration = 10;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
@@ -57,6 +59,7 @@ Player::Player():
 	m_attackCount(0),
 	m_wAttackCount(0),
 	m_hurtCount(0),
+	m_stunCount(0),
 	m_isTurn(false),
 	m_animFrame(0),
 	m_oldInput(0),
@@ -86,6 +89,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_attackCount = 0;
 	m_wAttackCount = 0;
 	m_hurtCount = 0;
+	m_stunCount = 0;
 	m_isTurn = _isTurn;
 	m_animFrame = 0;
 	m_oldInput = 0;
@@ -104,7 +108,7 @@ void Player::Update()
 	//	コントローラーのボタンの押された状態を取得する
 	int input = GetJoypadInputState(m_padType);
 	// プレイヤーの状態の更新
-	Updatestate(input);
+	UpdateState(input);
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
 	// 重力の制限
@@ -203,13 +207,15 @@ void Player::Gravity()
 }
 
 // プレイヤーの状態を更新する関数
-void Player::Updatestate(int _input)
+void Player::UpdateState(int _input)
 {
 	// プレイヤーの状態を保存
 	PlayerState saveState = m_state;
-	int input = GetJoypadInputState(m_padType);
-	bool attackTrigger = (input & PAD_INPUT_A) && !(m_oldInput & PAD_INPUT_A);
-	bool weakAttackTrigger = (input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
+	// 攻撃のトリガーをチェック
+	bool attackTrigger = (_input & PAD_INPUT_A) && !(m_oldInput & PAD_INPUT_A);
+	// 弱攻撃のトリガーをチェック
+	bool weakAttackTrigger = (_input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
+
 	// プレイヤーの状態を更新する
 	switch (m_state) 
 	{
@@ -227,6 +233,7 @@ void Player::Updatestate(int _input)
 		}
 		else if (!m_isAttack && (_input & PAD_INPUT_B)) 
 		{
+			printfDx("Bボタンを押した！\n");
 			m_attackType = AttackType::Weak;
 			m_wAttackCount = 0;
 			m_isAttack = true;
@@ -266,8 +273,6 @@ void Player::Updatestate(int _input)
 			m_isAttack = true;
 			printfDx("攻撃！\n");
 		}
-		// 前回の入力状態を更新
-		m_oldInput = input; 
 		if (m_attackCount == 1)
 		{
 			// 最初のフレームで攻撃の判定を行う
@@ -316,7 +321,15 @@ void Player::Updatestate(int _input)
 				m_state = PlayerState::Idle;
 				m_hurtCount = 0;
 			}
-			// 無敵時間中は何もしない
+			else if (m_state==PlayerState::WeakAttack)
+			{
+				if (m_hurtCount > kWeakHurtDuration)
+				{
+					m_state = PlayerState::Idle;
+					m_hurtCount = 0;
+				}
+			}
+			// 無敵時間中は移動や攻撃を無効化
 			return;
 		}
 	}
@@ -326,7 +339,7 @@ void Player::Updatestate(int _input)
 	{
 		m_animFrame = 0;
 	}
-	m_oldInput = input; // 前回の入力状態を更新
+	m_oldInput = _input; // 前回の入力状態を更新
 }
 
 // プレイヤーの移動反転処理
