@@ -9,7 +9,6 @@ enum class PlayerState
 	Attack,		// 強攻撃
 	WeakAttack,	// 弱攻撃
 	Hurt,		// 攻撃を受けた
-	Stun,		// 硬直時間
 };
 
 enum class AttackType
@@ -59,11 +58,10 @@ private:
 	int m_padType;				// パッドの種類
 	float m_radius;				// 当たり判定の半径
 	bool m_isAttack;			// 攻撃中かどうか
-	int m_attackCount;			// 攻撃のカウント
+	int m_attackCount;			// 強攻撃のカウント
 	int m_wAttackCount;			// 弱攻撃のカウント
 	int m_attackPrepCount;		// 強攻撃の準備のカウント
 	int m_hurtCount;			// 攻撃を受けたカウント
-	int m_stunCount;			// 硬直時間のカウント
 	bool m_isTurn;				// 左右反転
 	int m_animFrame;			// アニメーションのフレーム
 	int m_oldInput;				// 前回の入力	

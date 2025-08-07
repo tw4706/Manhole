@@ -1,6 +1,7 @@
 #pragma once
 #include"Player.h"
 #include"Bg.h"
+#include"Manhole.h"
 class SceneMain
 {
 public:
@@ -32,11 +33,17 @@ private:
 	int m_player2HurtGraphHandle;
 	// 背景のグラフィックハンドル
 	int m_bgGraphHandle;
+	// マンホールのグラフィックハンドル
+	int m_manhole1GraphHandle;
+	int m_manhole2GraphHandle;
 
 	// プレイヤー
 	Player*m_player1;
 	Player*m_player2;
 	// 背景
 	Bg*m_bg;
+	// マンホール
+	Manhole* m_manhole1;
+	Manhole* m_manhole2;
 };
 
