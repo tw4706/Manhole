@@ -4,11 +4,11 @@
 
 namespace
 {
-	// プレイヤー1・2のスタート位置
-	constexpr int kPlayer1StartX = 240;
-	constexpr int kPlayer1StartY = 480;
-	constexpr int kPlayer2StartX = 480;
-	constexpr int kPlayer2StartY = 480;
+	//// プレイヤー1・2のスタート位置
+	//constexpr int kPlayer1StartX = 240;
+	//constexpr int kPlayer1StartY = 480;
+	//constexpr int kPlayer2StartX = 480;
+	//constexpr int kPlayer2StartY = 480;
 	// プレイヤーグラフィックのサイズ
 	constexpr int kGraphWidth = 48;
 	constexpr int kGraphHeight = 48;
@@ -20,14 +20,13 @@ namespace
 	constexpr int kWeakAttackAnimNum = 6;
 	constexpr int kHurtAnimNum = 2;	
 	// 攻撃クールタイム
-	constexpr int kAttackCoolTime = 30;
-	constexpr int kWeakAttackCoolTime = 20;
+	constexpr int kAttackCoolTime = 50;
+	constexpr int kWeakAttackCoolTime = 30;
 	//強攻撃の準備時間
-	constexpr int kAttackPrep = 20;
+	constexpr int kAttackPrep = 30;
 	// 攻撃を受けた後の無敵時間
-	constexpr int kHurtDuration = 20;
-	constexpr int kWeakHurtDuration = 10;
-	constexpr int kStunDuration = 40;
+	constexpr int kHurtDuration = 30;
+	constexpr int kWeakHurtDuration = 15;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
@@ -35,12 +34,11 @@ namespace
 	// プレイヤーの拡大率
 	constexpr float kScale = 2.0f;
 	// ノックバックの距離
-	constexpr int knockBackDist = 50;
+	constexpr int knockBackDist = 60;
 	// 重力
 	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
 	constexpr int kGround = 400;
-
 }
 
 Player::Player():
@@ -56,7 +54,6 @@ Player::Player():
 	m_wAttackCount(0),
 	m_attackPrepCount(0),
 	m_hurtCount(0),
-	m_stunCount(0),
 	m_isTurn(false),
 	m_animFrame(0),
 	m_oldInput(0),
@@ -87,7 +84,6 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_wAttackCount = 0;
 	m_attackPrepCount = 0;
 	m_hurtCount = 0;
-	m_stunCount = 0;
 	m_isTurn = _isTurn;
 	m_animFrame = 0;
 	m_oldInput = 0;
@@ -328,17 +324,6 @@ void Player::UpdateState(int _input)
 			m_hurtCount = 0;
 			m_attackType = AttackType::Normal; // 状態リセット
 		}
-	case PlayerState::Stun:
-		m_stunCount++;
-		if (m_stunCount > kStunDuration) 
-		{
-			m_state = PlayerState::Idle;
-			m_stunCount = 0;
-			m_attackType = AttackType::Normal; // 状態リセット
-		}
-
-		// 無敵時間中は移動や攻撃を無効化
-		return;
 	}
 
 	// 状態が切り替わったらアニメーションフレームをリセット
@@ -401,7 +386,7 @@ void Player::KnockBack()
 	if (m_attackType == AttackType::Weak)
 	{
 		// 弱攻撃
-		knockBackValue *= 0.4f;
+		knockBackValue *= 0.35f;
 	}
 
 	if (distSq <= hitRadius * hitRadius)
@@ -417,19 +402,8 @@ void Player::KnockBack()
 			// プレイヤーが右向きなら右にノックバック
 			m_otherPlayer->m_pos.x += knockBackValue;
 		}
-
-		// 強攻撃だとスタン追加
-		if (m_attackType == AttackType::Normal)
-		{
-			m_otherPlayer->m_state = PlayerState::Stun;
-			m_otherPlayer->m_stunCount = 0;
-			printfDx("スタン状態！\n");
-		}
-		else
-		{
-			m_otherPlayer->m_state = PlayerState::Hurt;
-			m_otherPlayer->m_hurtCount = 0;
-		}
+		m_otherPlayer->m_state = PlayerState::Hurt;
+		m_otherPlayer->m_hurtCount = 0;
 
 		// 攻撃対象の状態を Hurt に変更
 		m_otherPlayer->m_state = PlayerState::Hurt;
