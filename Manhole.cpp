@@ -1,6 +1,7 @@
 #include "Manhole.h"
 
-Manhole::Manhole()
+Manhole::Manhole():
+	m_manholeHandle(-1)
 {
 }
 

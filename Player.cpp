@@ -4,34 +4,30 @@
 
 namespace
 {
-	// プレイヤーのスタート位置
+	// プレイヤー1・2のスタート位置
 	constexpr int kPlayer1StartX = 240;
 	constexpr int kPlayer1StartY = 480;
-	// プレイヤー2のスタート位置
 	constexpr int kPlayer2StartX = 480;
 	constexpr int kPlayer2StartY = 480;
 	// プレイヤーグラフィックのサイズ
 	constexpr int kGraphWidth = 48;
 	constexpr int kGraphHeight = 48;
-	// 待機アニメーション情報
+	// アニメーション情報
 	constexpr int kIdleAnimNum = 4;
 	constexpr int kAnimWaitFrame = 4;
-	// 走るアニメーション情報
 	constexpr int kRunAnimNum = 6;
-	// 攻撃アニメーション情報
 	constexpr int kAttackAnimNum = 8;
-	// 弱攻撃のアニメーション情報
 	constexpr int kWeakAttackAnimNum = 6;
-	// 攻撃を受けた時のアニメーション情報
 	constexpr int kHurtAnimNum = 2;	
-	// プレイヤーの攻撃クールタイム
+	// 攻撃クールタイム
 	constexpr int kAttackCoolTime = 30;
-	// プレイヤーの弱攻撃クールタイム
-	constexpr int kWeakAttackCoolTime = 30;
+	constexpr int kWeakAttackCoolTime = 20;
+	//強攻撃の準備時間
+	constexpr int kAttackPrep = 20;
 	// 攻撃を受けた後の無敵時間
 	constexpr int kHurtDuration = 20;
-	// 弱攻撃を受けた後の無敵時間
 	constexpr int kWeakHurtDuration = 10;
+	constexpr int kStunDuration = 40;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
@@ -58,6 +54,7 @@ Player::Player():
 	m_isAttack(false),
 	m_attackCount(0),
 	m_wAttackCount(0),
+	m_attackPrepCount(0),
 	m_hurtCount(0),
 	m_stunCount(0),
 	m_isTurn(false),
@@ -88,6 +85,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_isAttack = false;
 	m_attackCount = 0;
 	m_wAttackCount = 0;
+	m_attackPrepCount = 0;
 	m_hurtCount = 0;
 	m_stunCount = 0;
 	m_isTurn = _isTurn;
@@ -226,7 +224,7 @@ void Player::UpdateState(int _input)
 		}
 		else if (!m_isAttack && (_input & PAD_INPUT_A)) 
 		{
-			m_state = PlayerState::Attack;
+			m_state = PlayerState::AttackPrep;
 			m_attackCount = 0;
 			m_isAttack = true;
 			printfDx("攻撃した！\n");
@@ -241,6 +239,16 @@ void Player::UpdateState(int _input)
 			printfDx("弱攻撃した！\n");
 		}
 
+		break;
+	case PlayerState::AttackPrep:
+		m_attackPrepCount++;
+		if (m_attackPrepCount >= kAttackPrep)
+		{
+			m_state = PlayerState::Attack;
+			m_attackPrepCount = 0;
+			m_attackType = AttackType::Normal;
+			printfDx("強攻撃の準備完了!\n");
+		}
 		break;
 
 	case PlayerState::Run:
@@ -313,25 +321,24 @@ void Player::UpdateState(int _input)
 		}
 		break;
 	case PlayerState::Hurt:
-		if (m_state == PlayerState::Hurt)
+		m_hurtCount++;
+		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||(m_attackType == AttackType::Normal &&m_hurtCount > kHurtDuration))
 		{
-			m_hurtCount++;
-			if (m_hurtCount > kHurtDuration) 
-			{
-				m_state = PlayerState::Idle;
-				m_hurtCount = 0;
-			}
-			else if (m_state==PlayerState::WeakAttack)
-			{
-				if (m_hurtCount > kWeakHurtDuration)
-				{
-					m_state = PlayerState::Idle;
-					m_hurtCount = 0;
-				}
-			}
-			// 無敵時間中は移動や攻撃を無効化
-			return;
+			m_state = PlayerState::Idle;
+			m_hurtCount = 0;
+			m_attackType = AttackType::Normal; // 状態リセット
 		}
+	case PlayerState::Stun:
+		m_stunCount++;
+		if (m_stunCount > kStunDuration) 
+		{
+			m_state = PlayerState::Idle;
+			m_stunCount = 0;
+			m_attackType = AttackType::Normal; // 状態リセット
+		}
+
+		// 無敵時間中は移動や攻撃を無効化
+		return;
 	}
 
 	// 状態が切り替わったらアニメーションフレームをリセット
@@ -356,6 +363,9 @@ void Player::UpdateAnim()
 	{
 	case PlayerState::Idle:
 		animFrames = kIdleAnimNum;
+		break;
+	case PlayerState::AttackPrep:
+		animFrames = 1; 
 		break;
 	case PlayerState::Run:
 		animFrames = kRunAnimNum;
@@ -407,9 +417,25 @@ void Player::KnockBack()
 			// プレイヤーが右向きなら右にノックバック
 			m_otherPlayer->m_pos.x += knockBackValue;
 		}
+
+		// 強攻撃だとスタン追加
+		if (m_attackType == AttackType::Normal)
+		{
+			m_otherPlayer->m_state = PlayerState::Stun;
+			m_otherPlayer->m_stunCount = 0;
+			printfDx("スタン状態！\n");
+		}
+		else
+		{
+			m_otherPlayer->m_state = PlayerState::Hurt;
+			m_otherPlayer->m_hurtCount = 0;
+		}
+
 		// 攻撃対象の状態を Hurt に変更
 		m_otherPlayer->m_state = PlayerState::Hurt;
-		// ノックバック時のアニメーションフレームをリセット
+		// どの攻撃かを設定
+		m_otherPlayer->m_attackType = m_attackType;
+		// 攻撃を受けた時のアニメーションフレームをリセット
 		m_otherPlayer->m_animFrame = 0; 
 		printfDx("ノックバック (%s)!\n", m_attackType == AttackType::Weak ? "弱" : "強");
 	}
