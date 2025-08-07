@@ -5,6 +5,7 @@ enum class PlayerState
 {
 	Idle,		// ‘Ò‹@
 	Run,		// ‘–‚é
+	AttackPrep,	// ‹­UŒ‚€”õ
 	Attack,		// ‹­UŒ‚
 	WeakAttack,	// ãUŒ‚
 	Hurt,		// UŒ‚‚ğó‚¯‚½
@@ -13,7 +14,6 @@ enum class PlayerState
 
 enum class AttackType
 {
-	None,		// UŒ‚‚È‚µ
 	Normal,		// ‹­UŒ‚
 	Weak,		// ãUŒ‚
 };;
@@ -61,6 +61,7 @@ private:
 	bool m_isAttack;			// UŒ‚’†‚©‚Ç‚¤‚©
 	int m_attackCount;			// UŒ‚‚ÌƒJƒEƒ“ƒg
 	int m_wAttackCount;			// ãUŒ‚‚ÌƒJƒEƒ“ƒg
+	int m_attackPrepCount;		// ‹­UŒ‚‚Ì€”õ‚ÌƒJƒEƒ“ƒg
 	int m_hurtCount;			// UŒ‚‚ğó‚¯‚½ƒJƒEƒ“ƒg
 	int m_stunCount;			// d’¼ŠÔ‚ÌƒJƒEƒ“ƒg
 	bool m_isTurn;				// ¶‰E”½“]
