@@ -20,10 +20,10 @@ namespace
 	constexpr int kWeakAttackAnimNum = 6;
 	constexpr int kHurtAnimNum = 2;	
 	// 攻撃クールタイム
-	constexpr int kAttackCoolTime = 50;
-	constexpr int kWeakAttackCoolTime = 30;
+	constexpr int kAttackCoolTime = 30;
+	constexpr int kWeakAttackCoolTime = 20;
 	//強攻撃の準備時間
-	constexpr int kAttackPrep = 30;
+	constexpr int kAttackPrep = 20;
 	// 攻撃を受けた後の無敵時間
 	constexpr int kHurtDuration = 30;
 	constexpr int kWeakHurtDuration = 15;
@@ -176,9 +176,10 @@ void Player::Draw()
 			// 右向き
 			DrawRectExtendGraph(
 				static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
-				static_cast<int>(m_pos.x) + 96, static_cast<int>(m_pos.y) + 96,
+				static_cast<int>(m_pos.x) + kGraphWidth*kScale,
+				static_cast<int>(m_pos.y) + kGraphHeight*kScale,
 				srcX, srcY,
-				48, 48,
+				kGraphWidth, kGraphHeight,
 				handle, TRUE);
 		}
 	}
@@ -292,7 +293,7 @@ void Player::UpdateState(int _input)
 			m_attackCount = 0; 
 		}
 		break;
-	case PlayerState::WeakAttack:
+	case PlayerState::WeakAttack:	// 弱攻撃
 		m_wAttackCount++;
 		if (!m_isAttack && weakAttackTrigger)
 		{
@@ -311,14 +312,13 @@ void Player::UpdateState(int _input)
 		{
 			m_isAttack = false;
 			m_attackType = AttackType::Normal;// 攻撃タイプを通常に戻す
-			// 弱攻撃のクールタイムを超えたら状態を更新
 			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
 			m_wAttackCount = 0;
 		}
 		break;
-	case PlayerState::Hurt:
+	case PlayerState::Hurt:	// 攻撃を受けた状態
 		m_hurtCount++;
-		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||(m_attackType == AttackType::Normal &&m_hurtCount > kHurtDuration))
+		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) || (m_attackType == AttackType::Normal &&m_hurtCount > kHurtDuration))
 		{
 			m_state = PlayerState::Idle;
 			m_hurtCount = 0;
@@ -366,7 +366,7 @@ void Player::UpdateAnim()
 		break;
 	}
 
-	if (++m_animFrame >= animFrames * kAnimWaitFrame)
+	if (m_animFrame++ >= animFrames * kAnimWaitFrame)
 	{
 		m_animFrame = 0;
 	}
@@ -379,7 +379,7 @@ void Player::KnockBack()
 
 	float dx = m_otherPlayer->m_pos.x - m_pos.x;
 	float dy = m_otherPlayer->m_pos.y - m_pos.y;
-	float distSq = dx * dx + dy * dy;
+	float dist = dx * dx + dy * dy;
 	float hitRadius = m_radius + m_otherPlayer->m_radius;
 	float knockBackValue = knockBackDist;
 	// 攻撃の種類によるノックバックの調整
@@ -389,7 +389,7 @@ void Player::KnockBack()
 		knockBackValue *= 0.35f;
 	}
 
-	if (distSq <= hitRadius * hitRadius)
+	if (dist <= hitRadius * hitRadius)
 	{
 		// 攻撃方向でノックバック
 		if (m_isTurn)

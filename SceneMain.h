@@ -31,8 +31,6 @@ private:
 	// プレイヤーの攻撃を受けた時のハンドル
 	int m_player1HurtGraphHandle;
 	int m_player2HurtGraphHandle;
-	// 背景のグラフィックハンドル
-	int m_bgGraphHandle;
 	// マンホールのグラフィックハンドル
 	int m_manhole1GraphHandle;
 	int m_manhole2GraphHandle;
@@ -41,7 +39,7 @@ private:
 	Player*m_player1;
 	Player*m_player2;
 	// 背景
-	Bg*m_bg;
+	Bg* m_Bg;
 	// マンホール
 	Manhole* m_manhole1;
 	Manhole* m_manhole2;
