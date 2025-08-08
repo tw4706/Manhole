@@ -16,11 +16,11 @@ SceneMain::SceneMain():
 	m_player2RunGraphHandle(-1),
 	m_player1HurtGraphHandle(-1),
 	m_player2HurtGraphHandle(-1),
-	m_bgGraphHandle(-1),
 	m_manhole1GraphHandle(-1),
+	m_manhole2GraphHandle(-1),
 	m_player1(nullptr),
 	m_player2(nullptr),
-	m_bg(nullptr),
+	m_Bg(nullptr),
 	m_manhole1(nullptr),
 	m_manhole2(nullptr)
 {
@@ -36,7 +36,7 @@ void SceneMain::Init()
 	// プレイヤーのインスタンスを生成	
 	m_player1 = new Player();	
 	m_player2 = new Player();
-	m_bg = new Bg();
+	m_Bg = new Bg();
 	m_manhole1 = new Manhole();
 	m_manhole2 = new Manhole();
 	//グラフィックの読み込み
@@ -50,13 +50,12 @@ void SceneMain::Init()
 	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
 	m_player1HurtGraphHandle = LoadGraph("data/Player1.hurt.png");
 	m_player2HurtGraphHandle = LoadGraph("data/Player2.hurt.png");
-	m_bgGraphHandle = LoadGraph("data/Bg.png");
 	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
 
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle, m_player1WeakAttackGraphHandle,m_player1RunGraphHandle,m_player1HurtGraphHandle,false);
 	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2WeakAttackGraphHandle, m_player2RunGraphHandle, m_player2HurtGraphHandle,true);
-	m_bg->Init(m_bgGraphHandle);
+	m_Bg->Init();
 	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
 }
@@ -65,7 +64,7 @@ void SceneMain::End()
 {
 	m_player1->End();	// プレイヤーの終了処理
 	m_player2->End();
-	m_bg->End();		// 背景の終了処理
+	m_Bg->End();		// 背景の終了処理
 	m_manhole1->End();	// マンホールの終了処理
 	m_manhole2->End();	
 	// グラフィックの解放
@@ -79,7 +78,6 @@ void SceneMain::End()
 	DeleteGraph(m_player2RunGraphHandle);
 	DeleteGraph(m_player1HurtGraphHandle);
 	DeleteGraph(m_player2HurtGraphHandle);
-	DeleteGraph(m_bgGraphHandle);
 	DeleteGraph(m_manhole1GraphHandle);
 	DeleteGraph(m_manhole2GraphHandle);
 }
@@ -91,7 +89,7 @@ void SceneMain::Update()
 	m_player2->Update();
 	m_player1->SetOtherPlayer(m_player2);
 	m_player2->SetOtherPlayer(m_player1);
-	m_bg->Update();
+	m_Bg->Update();
 	m_manhole1->Update();
 	m_manhole2->Update();
 	UpdateGame();
@@ -100,7 +98,7 @@ void SceneMain::Update()
 void SceneMain::Draw()
 {
 	// 描画(後に描画したものが前に出る)
-	m_bg->Draw();
+	m_Bg->Draw();
 	m_manhole1->Draw();
 	m_manhole2->Draw();
 	m_player1->Draw();
