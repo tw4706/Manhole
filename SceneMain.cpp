@@ -92,7 +92,6 @@ void SceneMain::Update()
 	m_Bg->Update();
 	m_manhole1->Update();
 	m_manhole2->Update();
-	UpdateGame();
 }
 
 void SceneMain::Draw()
@@ -104,29 +103,4 @@ void SceneMain::Draw()
 	m_player1->Draw();
 	m_player2->Draw();
 	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));
-}
-
-void SceneMain::UpdateGame()
-{
-	const float Player1X = m_player1->GetPosX();
-	const float Player1Y = m_player1->GetPosY();
-	const float Player1Radius = m_player1->GetPosRadius();
-	
-	const float Player2X = m_player2->GetPosX();
-	const float Player2Y = m_player2->GetPosY();
-	const float Player2Radius = m_player2->GetPosRadius();
-
-	// ‹——£‚ÌŒvŽZ
-	float distX = Player1X - Player2X;
-	float distY = Player1Y - Player2Y;
-
-	float dist = (distX * distX) + (distY * distY);
-	// ‹——£
-	dist = sqrtf(dist);
-
-	if (dist < (Player1Radius + Player2Radius))
-	{
-		//printfDx("‚ ‚½‚Á‚Ä‚¢‚éI\n");
-	}
-
 }

@@ -1,14 +1,12 @@
 #include "Player.h"
 #include "SceneMain.h"
 #include"Dxlib.h"
+#define _DEBUG
 
 namespace
 {
-	//// プレイヤー1・2のスタート位置
-	//constexpr int kPlayer1StartX = 240;
-	//constexpr int kPlayer1StartY = 480;
-	//constexpr int kPlayer2StartX = 480;
-	//constexpr int kPlayer2StartY = 480;
+	// プレイヤーサイズ
+	constexpr float kPlayerSize = 48.0f;
 	// プレイヤーグラフィックのサイズ
 	constexpr int kGraphWidth = 48;
 	constexpr int kGraphHeight = 48;
@@ -105,6 +103,8 @@ void Player::Update()
 	UpdateState(input);
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
+	// 当たり判定の更新
+	m_colRect.SetCenter(m_pos.x, m_pos.y, kPlayerSize, kPlayerSize);
 	// 重力の制限
 	if (m_pos.y >= kGround)
 	{
@@ -183,15 +183,23 @@ void Player::Draw()
 				handle, TRUE);
 		}
 	}
-	// 当たり判定の表示
-	DrawCircle(static_cast<int>(m_pos.x)+kGraphWidth, 
-		static_cast<int>(m_pos.y)+kGraphHeight, 
-		static_cast<int>(m_radius), 
-		GetColor(255, 0, 0), FALSE);
-	if (handle == -1) 
+	float drawX = m_pos.x + kPlayerSize * 0.5f;
+	float drawY = m_pos.y + kPlayerSize * 0.5f;
+#ifdef _DEBUG
+	if (m_isTurn)
 	{
-		printfDx("描画用ハンドルが無効です！状態：%d\n", (int)m_state);
+		DrawGraphF(drawX, drawY, handle, TRUE);
 	}
+	else
+	{
+		DrawTurnGraphF(drawX, drawY, handle, TRUE);
+	}
+	// 当たり判定の表示
+	m_colRect.Draw(0xFFFF00, false);
+
+#endif
+
+	
 
 }
 

@@ -1,4 +1,5 @@
 #pragma once
+#include"Rect.h"
 #include"Vec2.h"
 
 enum class PlayerState
@@ -28,11 +29,6 @@ public:
 	void Update();
 	void Draw();
 	void Gravity();	// 重力
-
-	// 当たり判定の情報
-	float GetPosX() const { return m_pos.x; }	// X座標を取得
-	float GetPosY() const { return m_pos.y; }	// Y座標を取得
-	float GetPosRadius() const { return m_radius; }	// 半径を取得
 
 	void UpdateState(int _input);	// プレイヤーの状態管理
 	bool IsMoving(int _input);	// プレイヤーの移動
@@ -68,5 +64,8 @@ private:
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)
+protected:
+	// 当たり判定の矩形
+	Rect m_colRect;	
 };
 
