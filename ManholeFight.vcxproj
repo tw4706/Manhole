@@ -139,6 +139,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Manhole.cpp" />
     <ClCompile Include="Player.cpp" />
+    <ClCompile Include="Rect.cpp" />
     <ClCompile Include="SceneMain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +147,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Manhole.h" />
     <ClInclude Include="Player.h" />
+    <ClInclude Include="Rect.h" />
     <ClInclude Include="SceneMain.h" />
     <ClInclude Include="Vec2.h" />
   </ItemGroup>

@@ -14,8 +14,6 @@ public:
 	void Draw();
 
 private:
-	void UpdateGame();
-private:
 	// プレイヤーのグラフィックハンドル
 	int m_player1GraphHandle; 
 	int m_player2GraphHandle;
