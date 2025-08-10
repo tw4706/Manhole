@@ -102,12 +102,18 @@ void Bg::DrawMapChip()
 			int srcY = (chipNo / m_graphChipNumX) * kChipSize;
 
 			// マップチップの描画
-			DrawRectRotaGraph(posX, posY, srcX, srcY,
-				kChipSize, kChipSize, kChipScale, 
-				0.0f, m_mapHandle, true);
+			DrawRectRotaGraph(static_cast<int>(posX+kChipSize*kChipScale*0.5f),
+				static_cast<int>(posY + kChipSize * kChipScale * 0.5f), 
+				srcX, srcY,
+				kChipSize, kChipSize,
+				kChipScale, 0.0f,
+				m_mapHandle, true);
 
 			// 当たり判定
-			DrawBoxAA(posX, posY, posX + kChipSize * kChipScale, posY + kChipSize * kChipScale, 0x00ff00, false);
+			DrawBoxAA(posX, posY,
+				posX + kChipSize * kChipScale, 
+				posY + kChipSize * kChipScale,
+				0x00ff00, false);
 		}
 	}
 }
