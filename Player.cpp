@@ -104,7 +104,7 @@ void Player::Update()
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
 	// 当たり判定の更新
-	m_colRect.SetCenter(m_pos.x, m_pos.y, kPlayerSize, kPlayerSize);
+	m_colRect.init(m_pos.x, m_pos.y, kGraphWidth * kScale, kGraphHeight * kScale);
 	// 重力の制限
 	if (m_pos.y >= kGround)
 	{
@@ -183,20 +183,9 @@ void Player::Draw()
 				handle, TRUE);
 		}
 	}
-	float drawX = m_pos.x + kPlayerSize * 0.5f;
-	float drawY = m_pos.y + kPlayerSize * 0.5f;
 #ifdef _DEBUG
-	if (m_isTurn)
-	{
-		DrawGraphF(drawX, drawY, handle, TRUE);
-	}
-	else
-	{
-		DrawTurnGraphF(drawX, drawY, handle, TRUE);
-	}
 	// 当たり判定の表示
 	m_colRect.Draw(0xFFFF00, false);
-
 #endif
 
 	
