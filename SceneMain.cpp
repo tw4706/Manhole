@@ -1,6 +1,7 @@
 #include "SceneMain.h"
 #include"Dxlib.h"
 #include"Game.h"
+#include"Rect.h"
 #include "Bg.h"
 #include<cmath>
 #include "Manhole.h"
@@ -92,6 +93,15 @@ void SceneMain::Update()
 	m_Bg->Update();
 	m_manhole1->Update();
 	m_manhole2->Update();
+	// プレイヤー1が左マンホールに触れたら2の勝利
+	if (m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
+	{
+		printfDx("プレイヤー2の勝利!");
+	}
+	else if(m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
+	{
+		printfDx("プレイヤー1の勝利！");
+	}
 }
 
 void SceneMain::Draw()

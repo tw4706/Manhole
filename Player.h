@@ -36,7 +36,8 @@ public:
 	// 攻撃対象の取得
 	void SetOtherPlayer(Player* other) { m_otherPlayer = other; }
 	void KnockBack();	// ノックバック処理
-
+	// 当たり判定を取得するためのgetter関数
+	const Rect& GetCollisionRect() const;
 
 	// アドバイス:関数は動詞から始める
 	//　UpdateAnim

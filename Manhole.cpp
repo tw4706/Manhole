@@ -1,6 +1,12 @@
 #include "Manhole.h"
 #include "DxLib.h"
 
+namespace
+{
+	constexpr int kManhole1Size = 64;
+	constexpr int kManhole2Size = 64;
+}
+
 Manhole::Manhole():
 	m_manhole1Handle(-1),
 	m_manhole2Handle(-1),
@@ -35,9 +41,18 @@ void Manhole::Draw()
 	DrawExtendGraph(1100,450,1100+96,450+96, m_manhole2Handle,true);
 }
 
-void Manhole::HitManhole(int _handle1, int _handle2)
+bool Manhole::IsHitLeft(const Rect& playerRect) const
 {
-	// もしマンホールのグラフィックに当たっていれば
+	Rect leftRect;
+	leftRect.init(130, 450, 96, 96);
+	return leftRect.IsCollision(playerRect);
+}
+
+bool Manhole::IsHitRight(const Rect& playerRect) const
+{
+	Rect rightRect;
+	rightRect.init(1100, 450, 96, 96);
+	return rightRect.IsCollision(playerRect);
 }
 
 
