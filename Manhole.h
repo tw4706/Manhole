@@ -1,4 +1,6 @@
 #pragma once
+#include"Vec2.h"
+#include"Rect.h"
 class Manhole
 {
 public:
@@ -10,7 +12,8 @@ public:
 	void Update();
 	void Draw();
 
-	void HitManhole(int _handle1, int _handle2);
+	bool IsHitLeft(const Rect& playerRect)const;
+	bool IsHitRight(const Rect& playerRect)const;
 
 private:
 	// マンホールのハンドル
@@ -18,6 +21,7 @@ private:
 	int m_manhole2Handle;
 	// マンホールに当たっているか
 	bool m_isHitManhole;
+	Rect m_colRect; // 当たり判定用の矩形
 
 };
 

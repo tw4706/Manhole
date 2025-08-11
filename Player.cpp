@@ -399,7 +399,6 @@ void Player::KnockBack()
 			// プレイヤーが右向きなら右にノックバック
 			m_otherPlayer->m_pos.x += knockBackValue;
 		}
-		m_otherPlayer->m_state = PlayerState::Hurt;
 		m_otherPlayer->m_hurtCount = 0;
 
 		// 攻撃対象の状態を Hurt に変更
@@ -410,4 +409,9 @@ void Player::KnockBack()
 		m_otherPlayer->m_animFrame = 0; 
 		printfDx("ノックバック (%s)!\n", m_attackType == AttackType::Weak ? "弱" : "強");
 	}
+}
+
+const Rect& Player::GetCollisionRect() const
+{
+	return m_colRect;
 }
