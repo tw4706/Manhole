@@ -23,7 +23,8 @@ SceneMain::SceneMain():
 	m_player2(nullptr),
 	m_Bg(nullptr),
 	m_manhole1(nullptr),
-	m_manhole2(nullptr)
+	m_manhole2(nullptr),
+	m_roundTimer(nullptr)
 {
 
 }
@@ -40,6 +41,7 @@ void SceneMain::Init()
 	m_Bg = new Bg();
 	m_manhole1 = new Manhole();
 	m_manhole2 = new Manhole();
+	m_roundTimer = new Timer();
 	//グラフィックの読み込み
 	m_player1GraphHandle = LoadGraph("data/Player1.idle.png");
 	m_player2GraphHandle = LoadGraph("data/Player2.idle.png");
@@ -59,6 +61,9 @@ void SceneMain::Init()
 	m_Bg->Init();
 	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
+	m_roundTimer->Init(99.0f);
+	m_roundTimer->Start();
+	m_roundTimer->Reset();
 }
 
 void SceneMain::End()
@@ -67,7 +72,8 @@ void SceneMain::End()
 	m_player2->End();
 	m_Bg->End();		// 背景の終了処理
 	m_manhole1->End();	// マンホールの終了処理
-	m_manhole2->End();	
+	m_manhole2->End();
+	m_roundTimer->End();// タイマーの終了処理
 	// グラフィックの解放
 	DeleteGraph(m_player1GraphHandle);
 	DeleteGraph(m_player2GraphHandle);
@@ -81,10 +87,19 @@ void SceneMain::End()
 	DeleteGraph(m_player2HurtGraphHandle);
 	DeleteGraph(m_manhole1GraphHandle);
 	DeleteGraph(m_manhole2GraphHandle);
+	delete m_roundTimer;
 }
 
 void SceneMain::Update()
 {
+	// フレームレートを99fpsに設定
+	float deltaTime = 1.0f / 99.0f;
+	m_roundTimer->Update(deltaTime);
+	if (m_roundTimer->IsTimeUp())
+	{
+		printfDx("時間切れ!");
+		return;
+	}
 	// プレイヤーの処理の更新
 	m_player1->Update();
 	m_player2->Update();
@@ -107,6 +122,7 @@ void SceneMain::Update()
 void SceneMain::Draw()
 {
 	// 描画(後に描画したものが前に出る)
+	m_roundTimer->Draw(1080,20);
 	m_Bg->Draw();
 	m_manhole1->Draw();
 	m_manhole2->Draw();

@@ -2,6 +2,7 @@
 #include"Player.h"
 #include"Bg.h"
 #include"Manhole.h"
+#include"Timer.h"
 class SceneMain
 {
 public:
@@ -41,5 +42,7 @@ private:
 	// マンホール
 	Manhole* m_manhole1;
 	Manhole* m_manhole2;
+	// タイマー
+	Timer*m_roundTimer;
 };
 
