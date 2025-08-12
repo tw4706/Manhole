@@ -2,13 +2,13 @@
 class Timer
 {
 public:
-	Timer(float _maxTime) : m_time(_maxTime), m_maxTime(_maxTime), m_isRunning(false) {}
+	Timer();
 	~Timer();
 
-	void Init();
+	void Init(float _maxTime);
 	void End();
 	void Update(float _deltaTime);
-	void Draw();
+	void Draw(int _x, int _y)const;
 
 	// タイマーの開始と停止
 	void Start();
@@ -27,9 +27,6 @@ private:
 	// 最大時間
 	float m_maxTime;
 	// タイマーが動いているか
-	bool m_isRunning;	
-
-
-
+	bool m_isRunning;
 };
 
