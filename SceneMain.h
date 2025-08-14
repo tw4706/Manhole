@@ -33,6 +33,8 @@ private:
 	// マンホールのグラフィックハンドル
 	int m_manhole1GraphHandle;
 	int m_manhole2GraphHandle;
+	// 前回の時間を保存する変数
+	int m_timer;
 
 	// プレイヤー
 	Player*m_player1;
