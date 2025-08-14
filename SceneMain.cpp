@@ -19,6 +19,7 @@ SceneMain::SceneMain():
 	m_player2HurtGraphHandle(-1),
 	m_manhole1GraphHandle(-1),
 	m_manhole2GraphHandle(-1),
+	m_timer(0),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
@@ -35,6 +36,8 @@ SceneMain::~SceneMain()
 
 void SceneMain::Init()
 {
+	// 現在の時間を取得
+	m_timer = GetNowCount();
 	// プレイヤーのインスタンスを生成	
 	m_player1 = new Player();	
 	m_player2 = new Player();
@@ -61,9 +64,9 @@ void SceneMain::Init()
 	m_Bg->Init();
 	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
-	m_roundTimer->Init(99.0f);
-	m_roundTimer->Start();
+	m_roundTimer->Init(100.0f);
 	m_roundTimer->Reset();
+	m_roundTimer->Start();
 }
 
 void SceneMain::End()
@@ -92,15 +95,15 @@ void SceneMain::End()
 
 void SceneMain::Update()
 {
-	// フレームレートを99fpsに設定
-	float deltaTime = 1.0f / 99.0f;
+	int currentTime = GetNowCount();
+	float deltaTime = (currentTime - m_timer) / 1000.0f;
+	m_timer = currentTime;
 	m_roundTimer->Update(deltaTime);
 	if (m_roundTimer->IsTimeUp())
 	{
 		printfDx("時間切れ!");
 		return;
 	}
-	// プレイヤーの処理の更新
 	m_player1->Update();
 	m_player2->Update();
 	m_player1->SetOtherPlayer(m_player2);

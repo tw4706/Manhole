@@ -32,6 +32,8 @@ void Timer::Update(float _deltaTime)
 		if (m_time < 0.0f)
 		{
 			m_time = 0.0f;
+			// タイマーが0になったら停止
+			m_isRunning = false;
 		}
 	}
 }
