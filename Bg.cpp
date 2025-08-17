@@ -11,7 +11,7 @@ namespace
 	constexpr int kChipSize = 48;
 	// チップの拡大率
 	constexpr float kChipScale = 1.0f;
-	constexpr int kChipNumX = 7;
+	constexpr int kChipNumX = 40;
 	constexpr int kChipNumY = Game::kScreenHeight / kChipSize;	// 720 / 48 = 15
 
 	// チップの配置
