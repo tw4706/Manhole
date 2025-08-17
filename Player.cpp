@@ -208,6 +208,25 @@ void Player::UpdateState(int _input)
 	// 弱攻撃のトリガーをチェック
 	bool weakAttackTrigger = (_input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
 
+	// プレイヤーがバグで攻撃を食らってからうごけなかったから
+	// 対策用の処理
+	// やっていることは下のHurt状態の処理と同じだが
+	// ほかの状態処理を飛ばすことを追加
+	if (m_state == PlayerState::Hurt)
+	{
+		m_hurtCount++;
+		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
+			(m_attackType == AttackType::Normal && m_hurtCount > kHurtDuration))
+		{
+			m_state = PlayerState::Idle;
+			m_hurtCount = 0;
+			m_attackType = AttackType::Normal;
+			printfDx("Hurt終了\n");
+		}
+		m_oldInput = _input;
+		return; // 他の状態処理をスキップ
+	}
+
 	// プレイヤーの状態を更新する
 	switch (m_state) 
 	{
@@ -374,41 +393,31 @@ void Player::KnockBack()
 {
 	if (!m_otherPlayer) return;
 
-	float dx = m_otherPlayer->m_pos.x - m_pos.x;
-	float dy = m_otherPlayer->m_pos.y - m_pos.y;
-	float dist = dx * dx + dy * dy;
-	float hitRadius = m_radius + m_otherPlayer->m_radius;
-	float knockBackValue = knockBackDist;
-	// 攻撃の種類によるノックバックの調整
-	if (m_attackType == AttackType::Weak)
+	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{
-		// 弱攻撃
-		knockBackValue *= 0.35f;
-	}
+		float knockBackValue = knockBackDist;
+		if (m_attackType == AttackType::Weak)
+		{
+			knockBackValue *= 0.35f;
+		}
 
-	if (dist <= hitRadius * hitRadius)
-	{
-		// 攻撃方向でノックバック
 		if (m_isTurn)
 		{
-			// プレイヤーが左向きなら左にノックバック
 			m_otherPlayer->m_pos.x -= knockBackValue;
 		}
 		else
 		{
-			// プレイヤーが右向きなら右にノックバック
 			m_otherPlayer->m_pos.x += knockBackValue;
 		}
-		m_otherPlayer->m_hurtCount = 0;
 
-		// 攻撃対象の状態を Hurt に変更
+		m_otherPlayer->m_hurtCount = 0;
 		m_otherPlayer->m_state = PlayerState::Hurt;
-		// どの攻撃かを設定
 		m_otherPlayer->m_attackType = m_attackType;
-		// 攻撃を受けた時のアニメーションフレームをリセット
-		m_otherPlayer->m_animFrame = 0; 
-		printfDx("ノックバック (%s)!\n", m_attackType == AttackType::Weak ? "弱" : "強");
+		m_otherPlayer->m_animFrame = 0;
+
+		printfDx("ノックバック:%s!\n", m_attackType == AttackType::Weak ? "弱" : "強");
 	}
+
 }
 
 const Rect& Player::GetCollisionRect() const
