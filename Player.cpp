@@ -125,37 +125,38 @@ void Player::Draw()
 	// プレイヤーの状態に応じてアニメーションのハンドルを設定
 	switch (m_state)
 	{
-	case PlayerState::Idle:
+	case PlayerState::Idle:			// 待機中
 		animNum = (m_animFrame / kAnimWaitFrame) % kIdleAnimNum;
 		handle = m_handle;
 		srcY = 0;
 		break;
 
-	case PlayerState::Run:
+	case PlayerState::Run:			// 移動中
 		animNum = (m_animFrame / kAnimWaitFrame) % kRunAnimNum;
 		handle = m_runHandle;
 		srcY = 0;
 		break;
 
-	case PlayerState::Attack:
+	case PlayerState::Attack:		// 強攻撃
 		animNum = (m_animFrame / kAnimWaitFrame) % kAttackAnimNum;
 		handle = m_attackHandle;
 		srcY = 0;
 		break;
 
-	case PlayerState::WeakAttack:
+	case PlayerState::WeakAttack:	// 弱攻撃
 		animNum = (m_animFrame / kAnimWaitFrame) % kWeakAttackAnimNum;
 		handle = m_wAttackHandle;
 		srcY = 0;
 		break;
 
-	case PlayerState::Hurt:
+	case PlayerState::Hurt:			// 攻撃を受けた状態
 		animNum = (m_animFrame / kAnimWaitFrame) % kHurtAnimNum;
 		handle = m_hurtHandle;
 		srcY = 0;
 		break;
 	}
 
+	// アニメーションのX座標を求める
 	srcX = kGraphWidth * animNum;
 
 	// プレイヤーの描画処理
@@ -187,9 +188,6 @@ void Player::Draw()
 	// 当たり判定の表示
 	m_colRect.Draw(0xFFFF00, false);
 #endif
-
-	
-
 }
 
 void Player::Gravity()
@@ -215,6 +213,7 @@ void Player::UpdateState(int _input)
 	if (m_state == PlayerState::Hurt)
 	{
 		m_hurtCount++;
+		// 攻撃を受けた後の無敵時間を経過したら
 		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
 			(m_attackType == AttackType::Normal && m_hurtCount > kHurtDuration))
 		{
@@ -253,6 +252,7 @@ void Player::UpdateState(int _input)
 		}
 
 		break;
+		// 強攻撃の準備状態
 	case PlayerState::AttackPrep:
 		m_attackPrepCount++;
 		if (m_attackPrepCount >= kAttackPrep)
@@ -284,7 +284,6 @@ void Player::UpdateState(int _input)
 
 	case PlayerState::Attack:
 		m_attackCount++;
-
 		// 攻撃
 		// 押した瞬間判定する
 		if (!m_isAttack && attackTrigger)
@@ -309,6 +308,7 @@ void Player::UpdateState(int _input)
 			m_attackCount = 0; 
 		}
 		break;
+
 	case PlayerState::WeakAttack:	// 弱攻撃
 		m_wAttackCount++;
 		if (!m_isAttack && weakAttackTrigger)
@@ -320,18 +320,21 @@ void Player::UpdateState(int _input)
 		}
 		if (m_wAttackCount == 1) 
 		{
+			// 最初のフレームで弱攻撃の判定を行う
 			m_attackType = AttackType::Weak;
 			// 弱攻撃のノックバック
 			KnockBack();
 		}
 		if (m_wAttackCount > kWeakAttackCoolTime)
 		{
+			// クールタイムを超えたら通常状態に戻す
 			m_isAttack = false;
 			m_attackType = AttackType::Normal;// 攻撃タイプを通常に戻す
 			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
 			m_wAttackCount = 0;
 		}
 		break;
+
 	case PlayerState::Hurt:	// 攻撃を受けた状態
 		m_hurtCount++;
 		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) || (m_attackType == AttackType::Normal &&m_hurtCount > kHurtDuration))
@@ -382,6 +385,7 @@ void Player::UpdateAnim()
 		break;
 	}
 
+	// アニメーションフレームを更新
 	if (m_animFrame++ >= animFrames * kAnimWaitFrame)
 	{
 		m_animFrame = 0;
@@ -396,11 +400,13 @@ void Player::KnockBack()
 	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{
 		float knockBackValue = knockBackDist;
+		// 攻撃の種類によってノックバックの数値を変える
 		if (m_attackType == AttackType::Weak)
 		{
 			knockBackValue *= 0.35f;
 		}
 
+		// ノックバックの方向
 		if (m_isTurn)
 		{
 			m_otherPlayer->m_pos.x -= knockBackValue;
@@ -414,12 +420,10 @@ void Player::KnockBack()
 		m_otherPlayer->m_state = PlayerState::Hurt;
 		m_otherPlayer->m_attackType = m_attackType;
 		m_otherPlayer->m_animFrame = 0;
-
-		printfDx("ノックバック:%s!\n", m_attackType == AttackType::Weak ? "弱" : "強");
 	}
-
 }
 
+// プレイヤーの当たり判定を取得する関数
 const Rect& Player::GetCollisionRect() const
 {
 	return m_colRect;

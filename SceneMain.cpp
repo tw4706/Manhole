@@ -20,6 +20,7 @@ SceneMain::SceneMain():
 	m_manhole1GraphHandle(-1),
 	m_manhole2GraphHandle(-1),
 	m_timer(0),
+	m_gameOver(false),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
@@ -38,6 +39,7 @@ void SceneMain::Init()
 {
 	// 現在の時間を取得
 	m_timer = GetNowCount();
+	m_gameOver = false;
 	// プレイヤーのインスタンスを生成	
 	m_player1 = new Player();	
 	m_player2 = new Player();
@@ -64,7 +66,7 @@ void SceneMain::Init()
 	m_Bg->Init();
 	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
-	m_roundTimer->Init(100.0f);
+	m_roundTimer->Init(30.0f);
 	m_roundTimer->Reset();
 	m_roundTimer->Start();
 }
@@ -102,7 +104,8 @@ void SceneMain::Update()
 	if (m_roundTimer->IsTimeUp())
 	{
 		printfDx("時間切れ!");
-		return;
+		// ゲームオーバーにする
+		m_gameOver = true; 
 	}
 	m_player1->Update();
 	m_player2->Update();
@@ -115,10 +118,13 @@ void SceneMain::Update()
 	if (m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
 	{
 		printfDx("プレイヤー2の勝利!");
+		m_gameOver = true;
 	}
-	else if(m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
+	// プレイヤー2が右マンホールに触れたら1の勝利
+	else if (m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
 	{
 		printfDx("プレイヤー1の勝利！");
+		m_gameOver = true;
 	}
 }
 

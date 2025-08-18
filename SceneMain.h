@@ -35,6 +35,8 @@ private:
 	int m_manhole2GraphHandle;
 	// 前回の時間を保存する変数
 	int m_timer;
+	// ゲームオーバーのフラグ
+	bool m_gameOver;
 
 	// プレイヤー
 	Player*m_player1;

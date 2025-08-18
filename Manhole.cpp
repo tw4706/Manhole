@@ -41,6 +41,7 @@ void Manhole::Draw()
 	DrawExtendGraph(1100,450,1100+96,450+96, m_manhole2Handle,true);
 }
 
+// 左のマンホールの当たり判定取得
 bool Manhole::IsHitLeft(const Rect& playerRect) const
 {
 	Rect leftRect;
@@ -48,6 +49,7 @@ bool Manhole::IsHitLeft(const Rect& playerRect) const
 	return leftRect.IsCollision(playerRect);
 }
 
+// 右のマンホールの当たり判定取得
 bool Manhole::IsHitRight(const Rect& playerRect) const
 {
 	Rect rightRect;
