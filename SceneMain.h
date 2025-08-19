@@ -37,6 +37,9 @@ private:
 	int m_timer;
 	// ゲームオーバーのフラグ
 	bool m_gameOver;
+	// 勝利したプレイヤーのフラグ
+	bool m_player1WinFlag;
+	bool m_player2WinFlag;
 
 	// プレイヤー
 	Player*m_player1;

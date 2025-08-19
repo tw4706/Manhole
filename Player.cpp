@@ -28,7 +28,7 @@ namespace
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
-	constexpr int  kSpeed = 2;
+	constexpr int  kSpeed = 6;
 	// プレイヤーの拡大率
 	constexpr float kScale = 2.0f;
 	// ノックバックの距離
@@ -45,6 +45,8 @@ Player::Player():
 	m_wAttackHandle(-1),
 	m_runHandle(-1),
 	m_hurtHandle(-1),
+	m_pos(0.0f, 0.0f),
+	m_centerPos(0.0f, 0.0f),
 	m_padType(0),
 	m_radius(0.0f),
 	m_isAttack(false),
@@ -55,6 +57,7 @@ Player::Player():
 	m_isTurn(false),
 	m_animFrame(0),
 	m_oldInput(0),
+	m_gameOver(false),
 	m_state(PlayerState::Idle),
 	m_attackType(AttackType::Normal),
 	m_otherPlayer(nullptr)
@@ -75,6 +78,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_runHandle = _runHandle;
 	m_hurtHandle = _hurtHandle;
 	m_pos = _firstPos;
+	m_centerPos = Vec2(0.0f, 0.0f);
 	m_padType = _padType;
 	m_radius = kDefaultRadius;
 	m_isAttack = false;
@@ -85,6 +89,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_isTurn = _isTurn;
 	m_animFrame = 0;
 	m_oldInput = 0;
+	m_gameOver = false;
 	m_state = PlayerState::Idle;
 	m_attackType = AttackType::Normal;
 }
@@ -99,18 +104,35 @@ void Player::Update()
 	Gravity();
 	//	コントローラーのボタンの押された状態を取得する
 	int input = GetJoypadInputState(m_padType);
+	// 試しのコード
+	if (m_state == PlayerState::Hurt)
+	{
+		m_hurtCount++;
+	}
 	// プレイヤーの状態の更新
 	UpdateState(input);
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
-	// 当たり判定の更新
-	m_colRect.init(m_pos.x, m_pos.y, kGraphWidth * kScale, kGraphHeight * kScale);
+	// 当たり判定のサイズ
+	if (m_isTurn)
+	{
+		// 左向きのときは当たり判定の中心を左にずらす
+		m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
+			m_pos.y - kGraphHeight / 2 + 48.0f,
+			kGraphWidth, kGraphHeight);
+	}
+	else
+	{
+		// 右向きのときは当たり判定の中心を右にずらす
+		m_colRect.init(m_pos.x - kGraphWidth / 2 + 32.0f,
+			m_pos.y - kGraphHeight / 2 + 48.0f,
+			kGraphWidth, kGraphHeight);
+	}
 	// 重力の制限
 	if (m_pos.y >= kGround)
 	{
 		m_pos.y = kGround;
 	}
-
 }
 
 void Player::Draw()
@@ -206,26 +228,6 @@ void Player::UpdateState(int _input)
 	// 弱攻撃のトリガーをチェック
 	bool weakAttackTrigger = (_input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
 
-	// プレイヤーがバグで攻撃を食らってからうごけなかったから
-	// 対策用の処理
-	// やっていることは下のHurt状態の処理と同じだが
-	// ほかの状態処理を飛ばすことを追加
-	if (m_state == PlayerState::Hurt)
-	{
-		m_hurtCount++;
-		// 攻撃を受けた後の無敵時間を経過したら
-		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
-			(m_attackType == AttackType::Normal && m_hurtCount > kHurtDuration))
-		{
-			m_state = PlayerState::Idle;
-			m_hurtCount = 0;
-			m_attackType = AttackType::Normal;
-			printfDx("Hurt終了\n");
-		}
-		m_oldInput = _input;
-		return; // 他の状態処理をスキップ
-	}
-
 	// プレイヤーの状態を更新する
 	switch (m_state) 
 	{
@@ -250,8 +252,8 @@ void Player::UpdateState(int _input)
 			m_state = PlayerState::WeakAttack;
 			printfDx("弱攻撃した！\n");
 		}
-
 		break;
+
 		// 強攻撃の準備状態
 	case PlayerState::AttackPrep:
 		m_attackPrepCount++;
@@ -334,15 +336,18 @@ void Player::UpdateState(int _input)
 			m_wAttackCount = 0;
 		}
 		break;
-
-	case PlayerState::Hurt:	// 攻撃を受けた状態
-		m_hurtCount++;
-		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) || (m_attackType == AttackType::Normal &&m_hurtCount > kHurtDuration))
+	case PlayerState::Hurt:
+		// 攻撃を受けた後の無敵時間を経過したら通常状態に戻す
+		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
+			(m_attackType == AttackType::Normal && m_hurtCount > kHurtDuration))
 		{
 			m_state = PlayerState::Idle;
 			m_hurtCount = 0;
-			m_attackType = AttackType::Normal; // 状態リセット
+			m_attackType = AttackType::Normal;
+			printfDx("Hurt終了\n");
+			m_oldInput = _input; // 前回の入力状態を更新
 		}
+		break;
 	}
 
 	// 状態が切り替わったらアニメーションフレームをリセット
@@ -396,6 +401,8 @@ void Player::UpdateAnim()
 void Player::KnockBack()
 {
 	if (!m_otherPlayer) return;
+	// すでにダメージ状態に入っている場合はノックバックを行わない
+	if (m_otherPlayer->m_state == PlayerState::Hurt)return;
 
 	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{

@@ -110,10 +110,11 @@ void Bg::DrawMapChip()
 				m_mapHandle, true);
 
 			// “–‚½‚è”»’è
-			DrawBoxAA(posX, posY,
+		/*	DrawBoxAA(posX, posY,
 				posX + kChipSize * kChipScale, 
 				posY + kChipSize * kChipScale,
 				0x00ff00, false);
+		*/
 		}
 	}
 }
