@@ -17,21 +17,18 @@ namespace
 	// チップの配置
 	constexpr int kChipData[kChipNumY][kChipNumX] =
 	{
+		{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28},
 		{0,1,2,3,4,5,6},
 		{0,1,2,3,4,5,6},
 		{0,1,2,3,4,5,6},
 		{0,1,2,3,4,5,6},
 		{0,1,2,3,4,5,6},
-		{0,1,2,3,4,5,6},
-		{0,1,2,3,4,5,6},
-		{0,1,2,3,4,5,6},
-		{0,1,2,3,4,5,6},
-		{0,1,2,3,4,5,6},
+		{33,34,35,26,27,28,29,30},
+		{31,32,33,34,35},
+		{46},
+		{57,56,57,56,57,56,57,56,57,56,57,56,57,56,57,56,57,56,57,56,57,56,57,56,57,56,57},
 		{67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,67,66},
-		{78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78},
-		{0,1,2,3,4,5,6},
-		{0,1,2,3,4,5,6},
-		{67,67,67,67,67,67,67}
+		{78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78,78}
 	};
 
 }
@@ -51,8 +48,8 @@ Bg::Bg():
 	m_mapHandle = LoadGraph("data/mapChip.png");
 	GetGraphSize(m_mapHandle, &graphW, &graphH);
 
-	m_graphChipNumX = graphW / kChipSize;
-	m_graphChipNumY = graphH / kChipSize;
+	//m_graphChipNumX = graphW / kChipSize;
+	//m_graphChipNumY = graphH / kChipSize;
 }
 
 Bg::~Bg()
@@ -81,7 +78,7 @@ void Bg::Draw()
 
 void Bg::DrawMapChip()
 {
-	for (int y = 0; y < kChipNumY; y++)
+/*	for (int y = 0; y < kChipNumY; y++)
 	{
 		for (int x = 0; x < kChipNumX; x++)
 		{
@@ -110,13 +107,15 @@ void Bg::DrawMapChip()
 				m_mapHandle, true);
 
 			// 当たり判定
-		/*	DrawBoxAA(posX, posY,
+			DrawBoxAA(posX, posY,
 				posX + kChipSize * kChipScale, 
 				posY + kChipSize * kChipScale,
 				0x00ff00, false);
-		*/
+		
 		}
 	}
+	*/
+	DrawExtendGraph(0, 0, Game::kScreenWidth,m_mapHandle, true);
 }
 
 void Bg::LoadMapData()
