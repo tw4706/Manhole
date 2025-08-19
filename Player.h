@@ -38,6 +38,7 @@ public:
 	void KnockBack();	// ノックバック処理
 	// 当たり判定を取得するためのgetter関数
 	const Rect& GetCollisionRect() const;
+	void SetGameOver(bool isOver) { m_gameOver = isOver; } // ゲームオーバーの判定
 
 	// アドバイス:関数は動詞から始める
 	//　UpdateAnim
@@ -52,6 +53,7 @@ private:
 	int m_runHandle;			// 走るグラフィックのハンドル
 	int m_hurtHandle;			// 攻撃を受けた時のグラフィックのハンドル
 	Vec2 m_pos;					// 座標
+	Vec2 m_centerPos;			// 当たり判定のサイズ座標
 	int m_padType;				// パッドの種類
 	float m_radius;				// 当たり判定の半径
 	bool m_isAttack;			// 攻撃中かどうか
@@ -61,7 +63,8 @@ private:
 	int m_hurtCount;			// 攻撃を受けたカウント
 	bool m_isTurn;				// 左右反転
 	int m_animFrame;			// アニメーションのフレーム
-	int m_oldInput;				// 前回の入力	
+	int m_oldInput;				// 前回の入力
+	bool m_gameOver;			// ゲームオーバーかどうか
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)
