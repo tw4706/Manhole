@@ -141,7 +141,9 @@
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="SceneMain.cpp" />
+    <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Bg.h" />
@@ -150,7 +152,9 @@
     <ClInclude Include="Player.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="SceneMain.h" />
+    <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="TitleScene.h" />
     <ClInclude Include="Vec2.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

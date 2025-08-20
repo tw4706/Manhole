@@ -3,6 +3,7 @@
 #include"Bg.h"
 #include"Manhole.h"
 #include"Timer.h"
+#include"TitleScene.h"
 class SceneMain
 {
 public:
@@ -51,5 +52,7 @@ private:
 	Manhole* m_manhole2;
 	// タイマー
 	Timer*m_roundTimer;
+	// タイトルシーン
+	TitleScene* m_titleScene;
 };
 

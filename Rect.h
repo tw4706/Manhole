@@ -35,10 +35,5 @@ public:
 	float m_top;    // 矩形の左上のY座標
 	float m_right;  // 矩形の右下のX座標
 	float m_bottom; // 矩形の右下のY座標
-
-
-private:
-
-
 };
 

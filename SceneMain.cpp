@@ -26,7 +26,8 @@ SceneMain::SceneMain():
 	m_Bg(nullptr),
 	m_manhole1(nullptr),
 	m_manhole2(nullptr),
-	m_roundTimer(nullptr)
+	m_roundTimer(nullptr),
+	m_titleScene(nullptr)
 {
 
 }
@@ -47,6 +48,7 @@ void SceneMain::Init()
 	m_manhole1 = new Manhole();
 	m_manhole2 = new Manhole();
 	m_roundTimer = new Timer();
+	m_titleScene = new TitleScene();
 
 	// プレイヤーの勝利フラグを初期化
 	m_player1WinFlag = false;
@@ -73,6 +75,7 @@ void SceneMain::Init()
 	m_Bg->Init();
 	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
+	m_titleScene->Init();
 }
 
 void SceneMain::End()
@@ -83,6 +86,7 @@ void SceneMain::End()
 	m_manhole1->End();	// マンホールの終了処理
 	m_manhole2->End();
 	m_roundTimer->End();// タイマーの終了処理
+	m_titleScene->End(); // タイトルシーンの終了処理
 	// グラフィックの解放
 	DeleteGraph(m_player1GraphHandle);
 	DeleteGraph(m_player2GraphHandle);
@@ -96,6 +100,12 @@ void SceneMain::End()
 	DeleteGraph(m_player2HurtGraphHandle);
 	DeleteGraph(m_manhole1GraphHandle);
 	DeleteGraph(m_manhole2GraphHandle);
+	// 作成したインスタンスを解放
+	delete m_player1;
+	delete m_player2;
+	delete m_Bg;
+	delete m_manhole1;
+	delete m_manhole2;
 	delete m_roundTimer;
 }
 

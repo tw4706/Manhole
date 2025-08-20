@@ -19,7 +19,7 @@ namespace
 	constexpr int kHurtAnimNum = 2;	
 	// 攻撃クールタイム
 	constexpr int kAttackCoolTime = 30;
-	constexpr int kWeakAttackCoolTime = 20;
+	constexpr int kWeakAttackCoolTime = 35;
 	//強攻撃の準備時間
 	constexpr int kAttackPrep = 20;
 	// 攻撃を受けた後の無敵時間
@@ -28,7 +28,7 @@ namespace
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
-	constexpr int  kSpeed = 6;
+	constexpr float  kSpeed = 2.0f;
 	// プレイヤーの拡大率
 	constexpr float kScale = 2.0f;
 	// ノックバックの距離
@@ -60,8 +60,10 @@ Player::Player():
 	m_gameOver(false),
 	m_state(PlayerState::Idle),
 	m_attackType(AttackType::Normal),
-	m_otherPlayer(nullptr)
+	m_otherPlayer(nullptr),
+	m_colRect()
 {
+	m_colRect.init(0.0f, 0.0f, kPlayerSize, kPlayerSize);
 }
 
 Player::~Player()
