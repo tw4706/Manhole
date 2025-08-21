@@ -39,6 +39,18 @@ void Manhole::Draw()
 {
 	DrawExtendGraph(130, 450,130+96,450+96, m_manhole1Handle,true);
 	DrawExtendGraph(1100,450,1100+96,450+96, m_manhole2Handle,true);
+#ifdef _DEBUG
+	// 左マンホールの当たり判定
+	Rect leftRect;
+	leftRect.init(130, 450, 96, 96);
+	leftRect.Draw(0xFF0000, false); // 赤色で枠線表示
+
+	// 右マンホールの当たり判定
+	Rect rightRect;
+	rightRect.init(1100, 450, 96, 96);
+	rightRect.Draw(0x0000FF, false); // 青色で枠線表示
+#endif
+
 }
 
 // 左のマンホールの当たり判定取得
