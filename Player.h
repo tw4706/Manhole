@@ -39,8 +39,9 @@ public:
 	// 当たり判定を取得するためのgetter関数
 	const Rect& GetCollisionRect() const;
 	void SetGameOver(bool isOver) { m_gameOver = isOver; } // ゲームオーバーの判定
-
-	// アドバイス:関数は動詞から始める
+	void SetFalling(bool isFalling) { m_isFalling = isFalling; } // 落下中の判定
+	bool IsFalling()const; // 落下中かどうかの判定
+	// 先輩からのアドバイス:関数は動詞から始める
 	//　UpdateAnim
 	//　UpdateState
 
@@ -64,6 +65,8 @@ private:
 	bool m_isTurn;				// 左右反転
 	int m_animFrame;			// アニメーションのフレーム
 	int m_oldInput;				// 前回の入力
+	bool m_isFalling;			// 落下中かどうか
+	float m_fallSpeed;			// 落下速度
 	bool m_gameOver;			// ゲームオーバーかどうか
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類

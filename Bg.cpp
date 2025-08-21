@@ -7,6 +7,8 @@
 
 namespace
 {
+	// 画面の高さ
+	constexpr  int kMapHeight = 600;
 	// チップの大きさ
 	constexpr int kChipSize = 48;
 	// チップの拡大率
@@ -115,7 +117,7 @@ void Bg::DrawMapChip()
 		}
 	}
 	*/
-	DrawExtendGraph(0, 0, Game::kScreenWidth,m_mapHandle, true);
+	DrawExtendGraph(0, 0, Game::kScreenWidth,kMapHeight,m_mapHandle, true);
 }
 
 void Bg::LoadMapData()

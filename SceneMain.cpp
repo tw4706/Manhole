@@ -21,6 +21,8 @@ SceneMain::SceneMain():
 	m_manhole2GraphHandle(-1),
 	m_timer(0),
 	m_gameOver(false),
+	m_player1WinFlag(false),
+	m_player2WinFlag(false),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
@@ -48,6 +50,8 @@ void SceneMain::Init()
 	m_manhole2 = new Manhole();
 	m_roundTimer = new Timer();
 
+	// プレイヤーのゲームオーバーフラグを初期化
+	m_gameOver = false;
 	// プレイヤーの勝利フラグを初期化
 	m_player1WinFlag = false;
 	m_player2WinFlag = false;
@@ -130,23 +134,25 @@ void SceneMain::Update()
 	m_manhole1->Update();
 	m_manhole2->Update();
 	// プレイヤー1が左マンホールに触れたら2の勝利
-	if (m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
+	if (!m_player1->IsFalling() && m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
 	{
 		//printfDx("プレイヤー2の勝利!");
 		m_gameOver = true;
 		m_player2WinFlag = true;
 		m_player1->SetGameOver(true);
 		m_player2->SetGameOver(false);
+		m_player1->SetFalling(true);
 		m_roundTimer->Stop();
 	}
 	// プレイヤー2が右マンホールに触れたら1の勝利
-	else if (m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
+	else if (!m_player2->IsFalling() && m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
 	{
 		//printfDx("プレイヤー1の勝利！");
 		m_gameOver = true;
 		m_player1WinFlag = true;
 		m_player2->SetGameOver(true);
 		m_player1->SetGameOver(false);
+		m_player2->SetFalling(true);
 		m_roundTimer->Stop();
 	}
 }
@@ -159,19 +165,18 @@ void SceneMain::Draw()
 	m_manhole2->Draw();
 	m_player1->Draw();
 	m_player2->Draw();
-	m_roundTimer->Draw(1080, 20);
+	m_roundTimer->Draw(640, 600);
 	// 点滅用の処理
 	int now = GetNowCount();
 	// 500ミリ秒ごとに点滅する
 	bool blink = ((now / 500) % 2) == 0;
 	if (m_player1WinFlag&&blink)
 	{
-		m_player1->Update();
-		DrawFormatString(400, 240, GetColor(255, 0, 0), "プレイヤー1の勝利！");
+		DrawFormatString(350, 100, GetColor(255, 0, 0), "プレイヤー1の勝利！");
 	}
 	else if (m_player2WinFlag && blink)
 	{
-		DrawFormatString(400, 240, GetColor(255, 0, 0), "プレイヤー2の勝利！");
+		DrawFormatString(350, 100, GetColor(255, 0, 0), "プレイヤー2の勝利！");
 	}
 	// 勝者は動くことが可能
 	if (m_player1WinFlag)

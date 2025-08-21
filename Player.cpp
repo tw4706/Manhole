@@ -57,6 +57,8 @@ Player::Player():
 	m_isTurn(false),
 	m_animFrame(0),
 	m_oldInput(0),
+	m_isFalling(false),
+	m_fallSpeed(0.0f),
 	m_gameOver(false),
 	m_state(PlayerState::Idle),
 	m_attackType(AttackType::Normal),
@@ -89,6 +91,8 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_isTurn = _isTurn;
 	m_animFrame = 0;
 	m_oldInput = 0;
+	m_isFalling = false;
+	m_fallSpeed = 0.0f;
 	m_gameOver = false;
 	m_state = PlayerState::Idle;
 	m_attackType = AttackType::Normal;
@@ -102,32 +106,52 @@ void Player::Update()
 {
 	// 重力
 	Gravity();
-	//	コントローラーのボタンの押された状態を取得する
-	int input = GetJoypadInputState(m_padType);
 	// 試しのコード
 	if (m_state == PlayerState::Hurt)
 	{
 		m_hurtCount++;
 	}
+	// 落下中の処理
+	if (m_isFalling)
+	{
+		printfDx("落ちています!");
+		m_fallSpeed += 6.0f * kGravity;
+		m_pos.y += m_fallSpeed;
+
+		// 落下中の当たり判定を小さくする
+		m_colRect.init(m_pos.x, m_pos.y, 16, 16);
+
+		if (m_pos.x > 750)
+		{
+			m_isFalling = false;
+			m_fallSpeed = 0.0f;
+		}
+	}
+	else
+	{
+		// 通常の重力処理
+		Gravity();
+
+		// 通常の当たり判定
+		if (m_isTurn)
+		{
+			m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
+				m_pos.y - kGraphHeight / 2 + 48.0f,
+				kGraphWidth, kGraphHeight);
+		}
+		else
+		{
+			m_colRect.init(m_pos.x - kGraphWidth / 2 + 32.0f,
+				m_pos.y - kGraphHeight / 2 + 48.0f,
+				kGraphWidth, kGraphHeight);
+		}
+	}
+	//	コントローラーのボタンの押された状態を取得する
+	int input = GetJoypadInputState(m_padType);
 	// プレイヤーの状態の更新
 	UpdateState(input);
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
-	// 当たり判定のサイズ
-	if (m_isTurn)
-	{
-		// 左向きのときは当たり判定の中心を左にずらす
-		m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
-			m_pos.y - kGraphHeight / 2 + 48.0f,
-			kGraphWidth, kGraphHeight);
-	}
-	else
-	{
-		// 右向きのときは当たり判定の中心を右にずらす
-		m_colRect.init(m_pos.x - kGraphWidth / 2 + 32.0f,
-			m_pos.y - kGraphHeight / 2 + 48.0f,
-			kGraphWidth, kGraphHeight);
-	}
 	// 重力の制限
 	if (m_pos.y >= kGround)
 	{
@@ -434,4 +458,9 @@ void Player::KnockBack()
 const Rect& Player::GetCollisionRect() const
 {
 	return m_colRect;
+}
+
+bool Player::IsFalling() const
+{
+	return m_isFalling;
 }
