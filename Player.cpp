@@ -118,9 +118,6 @@ void Player::Update()
 		m_fallSpeed += 6.0f * kGravity;
 		m_pos.y += m_fallSpeed;
 
-		// 落下中の当たり判定を小さくする
-		m_colRect.init(m_pos.x, m_pos.y, 16, 16);
-
 		if (m_pos.x > 750)
 		{
 			m_isFalling = false;
@@ -153,7 +150,7 @@ void Player::Update()
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
 	// 重力の制限
-	if (m_pos.y >= kGround)
+	if (!m_isFalling&&m_pos.y >= kGround)
 	{
 		m_pos.y = kGround;
 	}
@@ -463,4 +460,9 @@ const Rect& Player::GetCollisionRect() const
 bool Player::IsFalling() const
 {
 	return m_isFalling;
+}
+
+void Player::DisableCollision()
+{
+	m_colRect.init(-9999, -9999, 0, 0);
 }

@@ -41,6 +41,7 @@ public:
 	void SetGameOver(bool isOver) { m_gameOver = isOver; } // ゲームオーバーの判定
 	void SetFalling(bool isFalling) { m_isFalling = isFalling; } // 落下中の判定
 	bool IsFalling()const; // 落下中かどうかの判定
+	void DisableCollision(); // 当たり判定を無効化する
 	// 先輩からのアドバイス:関数は動詞から始める
 	//　UpdateAnim
 	//　UpdateState

@@ -134,25 +134,27 @@ void SceneMain::Update()
 	m_manhole1->Update();
 	m_manhole2->Update();
 	// プレイヤー1が左マンホールに触れたら2の勝利
-	if (!m_player1->IsFalling() && m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
+	if (m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
 	{
 		//printfDx("プレイヤー2の勝利!");
+		m_player1->SetFalling(true);
+		m_player1->DisableCollision();
 		m_gameOver = true;
 		m_player2WinFlag = true;
 		m_player1->SetGameOver(true);
 		m_player2->SetGameOver(false);
-		m_player1->SetFalling(true);
 		m_roundTimer->Stop();
 	}
 	// プレイヤー2が右マンホールに触れたら1の勝利
-	else if (!m_player2->IsFalling() && m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
+	else if (m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
 	{
 		//printfDx("プレイヤー1の勝利！");
+		m_player2->SetFalling(true);
+		m_player2->DisableCollision();
 		m_gameOver = true;
 		m_player1WinFlag = true;
 		m_player2->SetGameOver(true);
 		m_player1->SetGameOver(false);
-		m_player2->SetFalling(true);
 		m_roundTimer->Stop();
 	}
 }

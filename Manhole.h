@@ -21,6 +21,8 @@ private:
 	int m_manhole2Handle;
 	// マンホールに当たっているか
 	bool m_isHitManhole;
+	bool m_leftTriggerFlag;
+	bool m_rightTriggerFlag;
 	Rect m_colRect; // 当たり判定用の矩形
 
 };
