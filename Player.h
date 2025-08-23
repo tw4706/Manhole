@@ -35,9 +35,11 @@ public:
 	void UpdateAnim();	// プレイヤーのアニメーション管理
 	// 攻撃対象の取得
 	void SetOtherPlayer(Player* other) { m_otherPlayer = other; }
-	void KnockBack();	// ノックバック処理
 	// 当たり判定を取得するためのgetter関数
 	const Rect& GetCollisionRect() const;
+	bool CanBeHit() const; // 攻撃を受けられるかどうか
+	bool ShouldTriggerHit() const;// 攻撃を当てられるかどうか
+	void ApplyHit(AttackType _type,const Player*_attacker);// ループ攻撃を回避する処理
 	void SetGameOver(bool isOver) { m_gameOver = isOver; } // ゲームオーバーの判定
 	void SetFalling(bool isFalling) { m_isFalling = isFalling; } // 落下中の判定
 	bool IsFalling()const; // 落下中かどうかの判定
