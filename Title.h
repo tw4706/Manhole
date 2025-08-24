@@ -11,8 +11,6 @@ public:
 	void Draw();
 
 private:
-	// グラフィックハンドル
-	int m_handle;
 
 };
 

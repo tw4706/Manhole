@@ -145,6 +145,7 @@ void SceneMain::Update()
 		m_player1->SetGameOver(true);
 		m_player2->SetGameOver(false);
 		m_roundTimer->Stop();
+		m_manhole1->DisableCollision();
 	}
 	// プレイヤー2が右マンホールに触れたら1の勝利
 	else if (m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
@@ -157,6 +158,7 @@ void SceneMain::Update()
 		m_player2->SetGameOver(true);
 		m_player1->SetGameOver(false);
 		m_roundTimer->Stop();
+		m_manhole2->DisableCollision();
 	}
 }
 

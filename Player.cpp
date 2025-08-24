@@ -18,8 +18,8 @@ namespace
 	constexpr int kWeakAttackAnimNum = 6;
 	constexpr int kHurtAnimNum = 2;	
 	// 攻撃クールタイム
-	constexpr int kAttackCoolTime = 30;
-	constexpr int kWeakAttackCoolTime = 20;
+	constexpr int kAttackCoolTime = 50;
+	constexpr int kWeakAttackCoolTime = 30;
 	//強攻撃の準備時間
 	constexpr int kAttackPrep = 20;
 	// 攻撃を受けた後の無敵時間
@@ -28,7 +28,7 @@ namespace
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
-	constexpr int  kSpeed = 6;
+	constexpr int  kSpeed = 2.0;
 	// プレイヤーの拡大率
 	constexpr float kScale = 2.0f;
 	// ノックバックの距離
@@ -105,44 +105,43 @@ void Player::End()
 
 void Player::Update()
 {
-	// 試しのコード
-	if (m_state == PlayerState::Hurt)
-	{
-		m_hurtCount++;
-	}
+	// 重力
+	Gravity();
 
-	// 落下中の処理
-	if (m_isFalling)
+	if (m_gameOver)
 	{
-		printfDx("落ちています!");
-		m_fallSpeed += 6.0f * kGravity;
+		// 演出処理（例：落下）
+		m_fallSpeed += 2.0f;
 		m_pos.y += m_fallSpeed;
 
-		if (m_pos.x > 750)
+		// 完全に画面外に落ちたら何か処理（例：シーン遷移）
+		if (m_pos.y > 600)
 		{
-			m_isFalling = false;
-			m_fallSpeed = 0.0f;
+			DisableCollision();
+			// ここでシーン遷移やリスポーン処理などを呼び出す
 		}
+
+		return; // 他の処理はスキップ
+	}
+
+
+		
+	// 通常の当たり判定
+		
+	if (m_isTurn)
+	{
+		m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
+		m_pos.y - kGraphHeight / 2 + 48.0f,
+		kGraphWidth, kGraphHeight);
+		
 	}
 	else
 	{
-		// 通常の重力処理
-		Gravity();
-
-		// 通常の当たり判定
-		if (m_isTurn)
-		{
-			m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
-				m_pos.y - kGraphHeight / 2 + 48.0f,
-				kGraphWidth, kGraphHeight);
-		}
-		else
-		{
-			m_colRect.init(m_pos.x - kGraphWidth / 2 + 32.0f,
-				m_pos.y - kGraphHeight / 2 + 48.0f,
-				kGraphWidth, kGraphHeight);
-		}
+		m_colRect.init(m_pos.x - kGraphWidth / 2 + 32.0f,
+		m_pos.y - kGraphHeight / 2 + 48.0f,
+		kGraphWidth, kGraphHeight);
 	}
+
 	//	コントローラーのボタンの押された状態を取得する
 	int input = GetJoypadInputState(m_padType);
 	// プレイヤーの状態の更新
@@ -150,7 +149,7 @@ void Player::Update()
 	// プレイヤーのアニメーションの更新
 	UpdateAnim();
 	// 重力の制限
-	if (!m_isFalling&&m_pos.y >= kGround)
+	if (!m_isFalling&& !m_gameOver && m_pos.y >= kGround)
 	{
 		m_pos.y = kGround;
 	}
@@ -354,6 +353,7 @@ void Player::UpdateState(int _input)
 		}
 		break;
 	case PlayerState::Hurt:
+		m_hurtCount++;
 		// 攻撃を受けた後の無敵時間を経過したら通常状態に戻す
 		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
 			(m_attackType == AttackType::Normal && m_hurtCount > kHurtDuration))
@@ -451,8 +451,6 @@ void Player::KnockBack()
 		m_otherPlayer->m_animFrame = 0;
 	}
 }
-
-
 
 bool Player::IsFalling() const
 {
