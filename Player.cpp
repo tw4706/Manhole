@@ -1,7 +1,6 @@
 #include "Player.h"
 #include "SceneMain.h"
 #include"Dxlib.h"
-#include <vector>
 #define _DEBUG
 
 namespace
@@ -38,14 +37,6 @@ namespace
 	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
 	constexpr int kGround = 400;
-	// 同時攻撃と状態遷移の競合を回避するための構造体
-	struct PendingHit
-	{
-		Player* attacker;
-		Player* target;
-		AttackType type;
-	};
-	std::vector<PendingHit> pendingHits;
 
 }
 
@@ -119,21 +110,6 @@ void Player::Update()
 	{
 		m_hurtCount++;
 	}
-	if (ShouldTriggerHit()) 
-	{
-		pendingHits.push_back({ this, m_otherPlayer, m_attackType });
-		printfDx("攻撃が追加されました！\n");
-	}
-
-	// 全プレイヤーの更新後に攻撃を適用
-	for (auto& hit : pendingHits) 
-	{
-		if (hit.target->CanBeHit()) 
-		{
-			hit.target->ApplyHit(hit.type,hit.attacker);
-		}
-	}
-	pendingHits.clear();
 
 	// 落下中の処理
 	if (m_isFalling)
@@ -178,6 +154,12 @@ void Player::Update()
 	{
 		m_pos.y = kGround;
 	}
+	// 攻撃した時に吹っ飛ばす
+	if (m_state == PlayerState::Attack || m_state == PlayerState::WeakAttack)
+	{
+		KnockBack();
+	}
+
 }
 
 void Player::Draw()
@@ -340,11 +322,6 @@ void Player::UpdateState(int _input)
 			m_isAttack = true;
 			printfDx("攻撃！\n");
 		}
-		// 最初のフレームで攻撃の判定を行う
-		if (ShouldTriggerHit()) 
-		{
-			pendingHits.push_back({ this, m_otherPlayer, AttackType::Normal });
-		}
 
 		// 攻撃のカウントがクールタイムを超えたら
 		if (m_attackCount > kAttackCoolTime) 
@@ -367,11 +344,6 @@ void Player::UpdateState(int _input)
 			printfDx("弱パンチ！\n");
 		}
 
-		if (ShouldTriggerHit()) 
-		{
-			pendingHits.push_back({ this, m_otherPlayer, AttackType::Normal });
-		}
-
 		if (m_wAttackCount > kWeakAttackCoolTime)
 		{
 			// クールタイムを超えたら通常状態に戻す
@@ -392,7 +364,7 @@ void Player::UpdateState(int _input)
 			printfDx("Hurt終了\n");
 			m_oldInput = _input; // 前回の入力状態を更新
 		}
-		break;
+		return;
 	}
 
 	// 状態が切り替わったらアニメーションフレームをリセット
@@ -448,53 +420,39 @@ const Rect& Player::GetCollisionRect() const
 	return m_colRect;
 }
 
-// 無敵時間が残っているなら攻撃を受けない
-bool Player::CanBeHit() const
+
+//プレイヤーの攻撃(ノックバック)処理 
+void Player::KnockBack()
 {
-	if (m_state == PlayerState::Hurt)return true;
-	if ((m_attackType == AttackType::Weak && m_hurtCount < kWeakHurtDuration) ||
-		(m_attackType == AttackType::Normal && m_hurtCount < kHurtDuration)) 
+	if (!m_otherPlayer) return; // すでにダメージ状態に入っている場合はノックバックを行わない if (m_otherPlayer->m_state == PlayerState::Hurt)return
+
+	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{
-		return false; // 無敵時間中
+		float knockBackValue = knockBackDist;
+		// 攻撃の種類によってノックバックの数値を変える
+		if (m_attackType == AttackType::Weak)
+		{
+			knockBackValue *= 0.35f;
+		}
+
+		// ノックバックの方向
+		if (m_isTurn)
+		{
+			m_otherPlayer->m_pos.x -= knockBackValue;
+		}
+		else
+		{
+			m_otherPlayer->m_pos.x += knockBackValue;
+		}
+
+		m_otherPlayer->m_hurtCount = 0;
+		m_otherPlayer->m_state = PlayerState::Hurt;
+		m_otherPlayer->m_attackType = m_attackType;
+		m_otherPlayer->m_animFrame = 0;
 	}
-	return true;
 }
 
-// 攻撃判定を出すべきかを判定する関数
-bool Player::ShouldTriggerHit() const
-{
-	if (m_state == PlayerState::Attack && m_attackCount == 1) return true;
-	if (m_state == PlayerState::WeakAttack && m_wAttackCount == 1) return true;
 
-	return false;
-}
-
-void Player::ApplyHit(AttackType _type,const Player*_attacker)
-{
-	if (!CanBeHit()) return;
-
-	float knockBackValue = knockBackDist;
-	if (_type == AttackType::Weak)
-	{
-		knockBackValue *= 0.35f;
-	}
-
-	if (_attacker->m_isTurn) 
-	{
-		m_pos.x += knockBackValue; // 攻撃者が左向き → 相手を右に吹っ飛ばす
-		printfDx("ノックバック: 右に %.2f 移動\n", knockBackValue);
-	}
-	else 
-	{
-		m_pos.x -= knockBackValue; // 攻撃者が右向き → 相手を左に吹っ飛ばす
-		printfDx("ノックバック: 左に %.2f 移動\n", knockBackValue);
-	}
-
-	m_state = PlayerState::Hurt;
-	m_attackType = _type;
-	m_hurtCount = 0;
-	m_animFrame = 0;
-}
 
 bool Player::IsFalling() const
 {

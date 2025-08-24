@@ -77,6 +77,7 @@ void SceneMain::Init()
 	m_Bg->Init();
 	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
+
 }
 
 void SceneMain::End()
