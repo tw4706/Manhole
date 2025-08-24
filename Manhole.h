@@ -15,8 +15,8 @@ public:
 	// プレイヤーがマンホールに当たっているかどうか
 	bool IsHitLeft(const Rect& playerRect);
 	bool IsHitRight(const Rect& playerRect);
-	// マンホールの当たり判定をなくす
-	void DisableCollision();
+	// 片方のマンホールの当たり判定をなくす
+	void DisableCollision(bool isLeft);
 
 private:
 	// マンホールのハンドル

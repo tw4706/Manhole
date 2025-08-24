@@ -67,7 +67,6 @@ bool Rect::IsCollision(const Rect& rect)
 	if (m_right < rect.m_left)return false;
 	if (m_bottom < rect.m_top)return false;
 
-
 	// ‚»‚êˆÈŠO‚Í“–‚½‚Á‚Ä‚¢‚é
 	return true;
 }

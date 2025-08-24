@@ -108,26 +108,7 @@ void Player::Update()
 	// 重力
 	Gravity();
 
-	if (m_gameOver)
-	{
-		// 演出処理（例：落下）
-		m_fallSpeed += 2.0f;
-		m_pos.y += m_fallSpeed;
-
-		// 完全に画面外に落ちたら何か処理（例：シーン遷移）
-		if (m_pos.y > 600)
-		{
-			DisableCollision();
-			// ここでシーン遷移やリスポーン処理などを呼び出す
-		}
-
-		return; // 他の処理はスキップ
-	}
-
-
-		
-	// 通常の当たり判定
-		
+	// 当たり判定
 	if (m_isTurn)
 	{
 		m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
