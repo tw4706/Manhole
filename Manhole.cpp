@@ -43,27 +43,27 @@ void Manhole::Update()
 
 void Manhole::Draw()
 {
-	DrawExtendGraph(130, 450,130+96,450+96, m_manhole1Handle,true);
-	DrawExtendGraph(1100,450,1100+96,450+96, m_manhole2Handle,true);
+	if (!m_leftTriggerFlag) 
+	{
+		DrawExtendGraph(130, 450, 130 + 96, 450 + 96, m_manhole1Handle, true);
+	}
+
+	if (!m_rightTriggerFlag) 
+	{
+		DrawExtendGraph(1100, 450, 1100 + 96, 450 + 96, m_manhole2Handle, true);
+	}
+
 #ifdef _DEBUG
 	// 左マンホールの当たり判定
 	if (!m_leftTriggerFlag)
 	{
 		m_leftRect.Draw(0xFF0000, false); // 赤色で枠線表示
 	}
-	else
-	{
-		printfDx("左のマンホール判定なし");
-	}
 
 	// 右マンホールの当たり判定
 	if (!m_rightTriggerFlag)
 	{
 		m_rightRect.Draw(0x0000FF, false); // 青色で枠線表示
-	}
-	else
-	{
-		printfDx("右のマンホール判定なし");
 	}
 	
 #endif
@@ -77,6 +77,7 @@ bool Manhole::IsHitLeft(const Rect& playerRect)
     {
 		// constのメンバ変数を変更するためにconst_castを使用
         m_leftTriggerFlag = true;
+		printfDx("左マンホールの描画をスキップ\n");
         return true;
     }
     return false;
@@ -95,12 +96,19 @@ bool Manhole::IsHitRight(const Rect& playerRect)
 	return false;
 }
 
-void Manhole::DisableCollision()
+void Manhole::DisableCollision(bool isLeft)
 {
-	m_leftTriggerFlag = true;
-	m_rightTriggerFlag = true;
-	m_leftRect.init(-9999, -9999, 0, 0);
-	m_rightRect.init(-9999, -9999, 0, 0);
+	if (isLeft)
+	{
+		m_leftTriggerFlag = true;
+		m_leftRect.init(-9999, -9999, 0, 0);
+	}
+	else
+	{
+		m_rightTriggerFlag = true;
+		m_rightRect.init(-9999, -9999, 0, 0);
+	}
+	printfDx("Disが呼ばれた！");
 }
 
 

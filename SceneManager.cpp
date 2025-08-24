@@ -30,11 +30,12 @@ void SceneManager::Init()
 
 void SceneManager::Update()
 {
+	int pad = GetJoypadInputState(DX_INPUT_PAD1);
 	switch (m_currentType)
 	{
 	case SCENE_TITLE:
 		m_title->Update();
-		if (CheckHitKey(KEY_INPUT_RETURN))
+		if (CheckHitKey(KEY_INPUT_RETURN)|| (pad&&DX_INPUT_PAD1))
 		{
 			ChangeScene(SCENE_MAIN);
 		}
