@@ -27,6 +27,8 @@ void Manhole::Init(int _handle1,int _handle2)
 	m_isHitManhole = false;
 	m_leftTriggerFlag = false;
 	m_rightTriggerFlag = false;
+	m_leftRect.init(130, 450, 96, 96);
+	m_rightRect.init(1100, 450, 96, 96);
 }
 
 void Manhole::End()
@@ -45,45 +47,60 @@ void Manhole::Draw()
 	DrawExtendGraph(1100,450,1100+96,450+96, m_manhole2Handle,true);
 #ifdef _DEBUG
 	// 左マンホールの当たり判定
-	Rect leftRect;
-	leftRect.init(130, 450, 96, 96);
-	leftRect.Draw(0xFF0000, false); // 赤色で枠線表示
+	if (!m_leftTriggerFlag)
+	{
+		m_leftRect.Draw(0xFF0000, false); // 赤色で枠線表示
+	}
+	else
+	{
+		printfDx("左のマンホール判定なし");
+	}
 
 	// 右マンホールの当たり判定
-	Rect rightRect;
-	rightRect.init(1100, 450, 96, 96);
-	rightRect.Draw(0x0000FF, false); // 青色で枠線表示
+	if (!m_rightTriggerFlag)
+	{
+		m_rightRect.Draw(0x0000FF, false); // 青色で枠線表示
+	}
+	else
+	{
+		printfDx("右のマンホール判定なし");
+	}
+	
 #endif
 
 }
 
-bool Manhole::IsHitLeft(const Rect& playerRect) const
+bool Manhole::IsHitLeft(const Rect& playerRect)
 {
     if (m_leftTriggerFlag) return false; // 当たっている場合は当たり判定を無効化
-    Rect leftRect;
-    leftRect.init(130, 450, 96, 96);
-    if (leftRect.IsCollision(playerRect))
+    if (m_leftRect.IsCollision(playerRect))
     {
 		// constのメンバ変数を変更するためにconst_castを使用
-        const_cast<bool&>(m_leftTriggerFlag) = true;
+        m_leftTriggerFlag = true;
         return true;
     }
     return false;
 }
 
 // 右のマンホールの当たり判定取得
-bool Manhole::IsHitRight(const Rect& playerRect) const
+bool Manhole::IsHitRight(const Rect& playerRect)
 {
 	if (m_rightTriggerFlag) return false; // 当たっている場合は当たり判定を無効化
-	Rect rightRect;
-	rightRect.init(1100, 450, 96, 96);
-	if (rightRect.IsCollision(playerRect))
+	if (m_rightRect.IsCollision(playerRect))
 	{
 		// constのメンバ変数を変更するためにconst_castを使用
-		const_cast<bool&>(m_rightTriggerFlag) = true;
+		m_rightTriggerFlag = true;
 		return true;
 	}
 	return false;
+}
+
+void Manhole::DisableCollision()
+{
+	m_leftTriggerFlag = true;
+	m_rightTriggerFlag = true;
+	m_leftRect.init(-9999, -9999, 0, 0);
+	m_rightRect.init(-9999, -9999, 0, 0);
 }
 
 

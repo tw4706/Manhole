@@ -12,8 +12,11 @@ public:
 	void Update();
 	void Draw();
 
-	bool IsHitLeft(const Rect& playerRect)const;
-	bool IsHitRight(const Rect& playerRect)const;
+	// プレイヤーがマンホールに当たっているかどうか
+	bool IsHitLeft(const Rect& playerRect);
+	bool IsHitRight(const Rect& playerRect);
+	// マンホールの当たり判定をなくす
+	void DisableCollision();
 
 private:
 	// マンホールのハンドル
@@ -24,6 +27,8 @@ private:
 	bool m_leftTriggerFlag;
 	bool m_rightTriggerFlag;
 	Rect m_colRect; // 当たり判定用の矩形
+	Rect m_leftRect;
+	Rect m_rightRect;
 
 };
 
