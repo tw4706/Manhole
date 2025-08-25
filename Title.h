@@ -11,6 +11,8 @@ public:
 	void Draw();
 
 private:
+	// BGMのグラフィックハンドル
+	int m_bgmHandle;
 
 };
 

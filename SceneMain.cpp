@@ -23,6 +23,8 @@ SceneMain::SceneMain():
 	m_gameOver(false),
 	m_player1WinFlag(false),
 	m_player2WinFlag(false),
+	m_bgmHandle(-1),
+	m_winBgmHandle(-1),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
@@ -68,6 +70,10 @@ void SceneMain::Init()
 	m_player2HurtGraphHandle = LoadGraph("data/Player2.hurt.png");
 	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
+	m_bgmHandle = LoadSoundMem("data/game.mp3");
+	ChangeVolumeSoundMem(180, m_bgmHandle);          // 音量の調整
+	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
+
 
 	m_roundTimer->Init(300.0f);
 	m_roundTimer->Reset();
@@ -102,6 +108,8 @@ void SceneMain::End()
 	DeleteGraph(m_manhole1GraphHandle);
 	DeleteGraph(m_manhole2GraphHandle);
 	delete m_roundTimer;
+	DeleteSoundMem(m_bgmHandle);
+
 }
 
 void SceneMain::Update()
@@ -112,6 +120,7 @@ void SceneMain::Update()
 	// ゲームのリスタート
 	if (m_gameOver)
 	{
+		StopSoundMem(m_bgmHandle);
 		// Rキーが押されたらリスタート
 		if (CheckHitKey(KEY_INPUT_R))
 		{

@@ -2,6 +2,7 @@
 #include"Rect.h"
 #include"DxLib.h"
 #include"Vec2.h"
+#include<vector>
 
 enum class PlayerState
 {
@@ -17,7 +18,19 @@ enum class AttackType
 {
 	Normal,		// 強攻撃
 	Weak,		// 弱攻撃
-};;
+};
+
+class Player; // 前方宣言
+
+// 攻撃を一時保存するための構造体
+struct Attack
+{
+	Player* attacker;
+	Player* target;
+	int priority;   // 強攻撃ほど高く
+	int hitFrame;   // 攻撃が当たったフレーム
+};
+
 class Player
 {
 public:
@@ -30,18 +43,16 @@ public:
 	void Draw();
 	void Gravity();	// 重力
 
-	void UpdateState(int _input);	// プレイヤーの状態管理
-	bool IsMoving(int _input);	// プレイヤーの移動
-	void UpdateAnim();	// プレイヤーのアニメーション管理
-	// 攻撃対象の取得
-	void SetOtherPlayer(Player* other) { m_otherPlayer = other; }
-	void KnockBack(); // ノックバック処理
-	// 当たり判定を取得するためのgetter関数
-	const Rect& GetCollisionRect() const;
-	void SetGameOver(bool isOver) { m_gameOver = isOver; } // ゲームオーバーの判定
-	void SetFalling(bool isFalling) { m_isFalling = isFalling; } // 落下中の判定
-	bool IsFalling()const; // 落下中かどうかの判定
-	void DisableCollision(); // 当たり判定を無効化する
+	void UpdateState(int _input);									// プレイヤーの状態管理
+	bool IsMoving(int _input);										// プレイヤーの移動
+	void UpdateAnim();												// プレイヤーのアニメーション管理
+	void SetOtherPlayer(Player* other) { m_otherPlayer = other; }	// 攻撃対象の取得
+	void KnockBack();												// ノックバック処理
+	const Rect& GetCollisionRect() const;							// 当たり判定を取得するためのgetter関数
+	bool IsHurt()const;
+	void SetGameOver(bool isOver) { m_gameOver = isOver; }			// ゲームオーバーの判定
+	void SetFalling(bool isFalling) { m_isFalling = isFalling; }	// 落下中の判定
+	bool IsFalling()const;											// 落下中かどうかの判定
 	// 先輩からのアドバイス:関数は動詞から始める
 	//　UpdateAnim
 	//　UpdateState
@@ -69,9 +80,12 @@ private:
 	bool m_isFalling;			// 落下中かどうか
 	float m_fallSpeed;			// 落下速度
 	bool m_gameOver;			// ゲームオーバーかどうか
+	int m_currentFrame;			// 現在のフレーム数
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)
+	std::vector<Attack> m_pendingAttacks;
+
 protected:
 	// 当たり判定の矩形
 	Rect m_colRect;	

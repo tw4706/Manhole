@@ -41,6 +41,10 @@ private:
 	// 勝利したプレイヤーのフラグ
 	bool m_player1WinFlag;
 	bool m_player2WinFlag;
+	// BGMのグラフィックハンドル
+	int m_bgmHandle;
+	// 勝利時のBGMハンドル
+	int m_winBgmHandle;
 
 	// プレイヤー
 	Player*m_player1;
