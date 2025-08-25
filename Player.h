@@ -1,5 +1,6 @@
 #pragma once
 #include"Rect.h"
+#include"DxLib.h"
 #include"Vec2.h"
 
 enum class PlayerState
