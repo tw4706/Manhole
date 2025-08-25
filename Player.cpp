@@ -1,7 +1,7 @@
 #include "Player.h"
 #include "SceneMain.h"
 #include"Dxlib.h"
-#define _DEBUG
+#include <algorithm>
 
 namespace
 {
@@ -61,6 +61,7 @@ Player::Player():
 	m_isFalling(false),
 	m_fallSpeed(0.0f),
 	m_gameOver(false),
+	m_currentFrame(0),
 	m_state(PlayerState::Idle),
 	m_attackType(AttackType::Normal),
 	m_otherPlayer(nullptr)
@@ -95,6 +96,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_isFalling = false;
 	m_fallSpeed = 0.0f;
 	m_gameOver = false;
+	m_currentFrame = 0;
 	m_state = PlayerState::Idle;
 	m_attackType = AttackType::Normal;
 }
@@ -134,12 +136,11 @@ void Player::Update()
 	{
 		m_pos.y = kGround;
 	}
-	// 攻撃した時に吹っ飛ばす
-	if (m_state == PlayerState::Attack || m_state == PlayerState::WeakAttack)
+	// 攻撃判定フレーム（3フレーム目）だけ判定
+	if (m_animFrame == 3)
 	{
 		KnockBack();
 	}
-
 }
 
 void Player::Draw()
@@ -155,34 +156,44 @@ void Player::Draw()
 	switch (m_state)
 	{
 	case PlayerState::Idle:			// 待機中
+	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kIdleAnimNum;
 		handle = m_handle;
 		srcY = 0;
 		break;
+	}
 
 	case PlayerState::Run:			// 移動中
+	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kRunAnimNum;
 		handle = m_runHandle;
 		srcY = 0;
 		break;
+	}
 
 	case PlayerState::Attack:		// 強攻撃
+	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kAttackAnimNum;
 		handle = m_attackHandle;
 		srcY = 0;
 		break;
+	}
 
 	case PlayerState::WeakAttack:	// 弱攻撃
+	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kWeakAttackAnimNum;
 		handle = m_wAttackHandle;
 		srcY = 0;
 		break;
+	}
 
 	case PlayerState::Hurt:			// 攻撃を受けた状態
+	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kHurtAnimNum;
 		handle = m_hurtHandle;
 		srcY = 0;
 		break;
+	}
 	}
 
 	// アニメーションのX座標を求める
@@ -236,21 +247,21 @@ void Player::UpdateState(int _input)
 	bool weakAttackTrigger = (_input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
 
 	// プレイヤーの状態を更新する
-	switch (m_state) 
+	switch (m_state)
 	{
 	case PlayerState::Idle:
 		if (!m_isAttack && IsMoving(_input))
 		{
 			m_state = PlayerState::Run;
 		}
-		else if (!m_isAttack && (_input & PAD_INPUT_A)) 
+		else if (!m_isAttack && (_input & PAD_INPUT_A))
 		{
 			m_state = PlayerState::AttackPrep;
 			m_attackCount = 0;
 			m_isAttack = true;
 			printfDx("攻撃した！\n");
 		}
-		else if (!m_isAttack && (_input & PAD_INPUT_B)) 
+		else if (!m_isAttack && (_input & PAD_INPUT_B))
 		{
 			printfDx("Bボタンを押した！\n");
 			m_attackType = AttackType::Weak;
@@ -263,6 +274,7 @@ void Player::UpdateState(int _input)
 
 		// 強攻撃の準備状態
 	case PlayerState::AttackPrep:
+	{
 		m_attackPrepCount++;
 		if (m_attackPrepCount >= kAttackPrep)
 		{
@@ -272,24 +284,27 @@ void Player::UpdateState(int _input)
 			printfDx("強攻撃の準備完了!\n");
 		}
 		break;
+	}
 
 	case PlayerState::Run:
+	{
 		// 移動処理
-		if (_input & PAD_INPUT_LEFT && !(_input & PAD_INPUT_RIGHT)) 
+		if (_input & PAD_INPUT_LEFT && !(_input & PAD_INPUT_RIGHT))
 		{
 			m_pos.x -= kSpeed;
 			m_isTurn = true;
 		}
-		if (_input & PAD_INPUT_RIGHT && !(_input & PAD_INPUT_LEFT)) 
+		if (_input & PAD_INPUT_RIGHT && !(_input & PAD_INPUT_LEFT))
 		{
 			m_pos.x += kSpeed;
 			m_isTurn = false;
 		}
-		if (!IsMoving(_input)) 
+		if (!IsMoving(_input))
 		{
 			m_state = PlayerState::Idle;
 		}
 		break;
+	}
 
 	case PlayerState::Attack:
 		m_attackCount++;
@@ -304,13 +319,13 @@ void Player::UpdateState(int _input)
 		}
 
 		// 攻撃のカウントがクールタイムを超えたら
-		if (m_attackCount > kAttackCoolTime) 
+		if (m_attackCount > kAttackCoolTime)
 		{
 			m_isAttack = false;
 			m_attackType = AttackType::Normal;
 			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
 			// 攻撃カウントをリセット
-			m_attackCount = 0; 
+			m_attackCount = 0;
 		}
 		break;
 
@@ -346,14 +361,14 @@ void Player::UpdateState(int _input)
 			m_oldInput = _input; // 前回の入力状態を更新
 		}
 		return;
-	}
 
-	// 状態が切り替わったらアニメーションフレームをリセット
-	if (saveState != m_state) 
-	{
-		m_animFrame = 0;
+		// 状態が切り替わったらアニメーションフレームをリセット
+		if (saveState != m_state)
+		{
+			m_animFrame = 0;
+		}
+		m_oldInput = _input; // 前回の入力状態を更新
 	}
-	m_oldInput = _input; // 前回の入力状態を更新
 }
 
 // プレイヤーの移動反転処理
@@ -401,11 +416,16 @@ const Rect& Player::GetCollisionRect() const
 	return m_colRect;
 }
 
+// Hurt状態を返す関数
+bool Player::IsHurt() const
+{
+	return m_state == PlayerState::Hurt;
+}
 
 //プレイヤーの攻撃(ノックバック)処理 
 void Player::KnockBack()
 {
-	if (!m_otherPlayer) return; // すでにダメージ状態に入っている場合はノックバックを行わない if (m_otherPlayer->m_state == PlayerState::Hurt)return
+	if (!m_otherPlayer||m_otherPlayer->IsHurt()) return;
 
 	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{
@@ -417,13 +437,13 @@ void Player::KnockBack()
 		}
 
 		// ノックバックの方向
-		if (m_isTurn)
+		if (m_pos.x < m_otherPlayer->m_pos.x)
 		{
-			m_otherPlayer->m_pos.x -= knockBackValue;
+			m_pos.x += knockBackValue; // 右に吹っ飛ぶ
 		}
 		else
 		{
-			m_otherPlayer->m_pos.x += knockBackValue;
+			m_pos.x -= knockBackValue; // 左に吹っ飛ぶ
 		}
 
 		m_otherPlayer->m_hurtCount = 0;
@@ -436,9 +456,4 @@ void Player::KnockBack()
 bool Player::IsFalling() const
 {
 	return m_isFalling;
-}
-
-void Player::DisableCollision()
-{
-	m_colRect.init(-9999, -9999, 0, 0);
 }

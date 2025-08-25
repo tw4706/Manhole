@@ -34,7 +34,8 @@ void SceneManager::Update()
 	{
 	case SCENE_TITLE:
 		m_title->Update();
-		if (CheckHitKey(KEY_INPUT_RETURN));
+		// EnterƒL[‚ğ‰Ÿ‚µ‚½‚çƒQ[ƒ€‰æ–Ê‚É”ò‚Ô
+		if (CheckHitKey(KEY_INPUT_RETURN))
 		{
 			ChangeScene(SCENE_MAIN);
 		}
