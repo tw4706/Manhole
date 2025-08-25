@@ -438,7 +438,6 @@ bool Player::IsFalling() const
 	return m_isFalling;
 }
 
-
 void Player::DisableCollision()
 {
 	m_colRect.init(-9999, -9999, 0, 0);

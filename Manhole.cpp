@@ -75,7 +75,6 @@ bool Manhole::IsHitLeft(const Rect& playerRect)
     if (m_leftTriggerFlag) return false; // 当たっている場合は当たり判定を無効化
     if (m_leftRect.IsCollision(playerRect))
     {
-		// constのメンバ変数を変更するためにconst_castを使用
         m_leftTriggerFlag = true;
 		printfDx("左マンホールの描画をスキップ\n");
         return true;
@@ -89,7 +88,6 @@ bool Manhole::IsHitRight(const Rect& playerRect)
 	if (m_rightTriggerFlag) return false; // 当たっている場合は当たり判定を無効化
 	if (m_rightRect.IsCollision(playerRect))
 	{
-		// constのメンバ変数を変更するためにconst_castを使用
 		m_rightTriggerFlag = true;
 		return true;
 	}
