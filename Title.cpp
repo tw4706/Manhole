@@ -1,7 +1,9 @@
 #include "Title.h"
 #include"DxLib.h"
+#include"Game.h"
 
 Title::Title() :
+    m_titleGraphHandle(-1),
     m_bgmHandle(-1)
 {
 }
@@ -12,6 +14,7 @@ Title::~Title()
 
 void Title::Init()
 {
+    m_titleGraphHandle = LoadGraph("data/title.png");
     m_bgmHandle = LoadSoundMem("data/title.mp3");
     PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);
     ChangeVolumeSoundMem(150, m_bgmHandle);
@@ -30,8 +33,9 @@ void Title::Update()
 
 void Title::Draw()
 {
+    DrawGraph(0,0, m_titleGraphHandle, true);
+    // É^ÉCÉgÉãï∂éöÇÃï`âÊÇ∆ÉtÉFÅ[Éh
     static int alpha = 0;
-    DrawBox(0, 0, 1280, 720, GetColor(0, 0, 0), TRUE); // îwåiÇÃï`âÊ
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);
     DrawString(560, 320, "ManholeFight", GetColor(255, 0, 0));
     DrawString(530, 500, "Press:Return or Pad:ÅZ",GetColor(255,0,0));

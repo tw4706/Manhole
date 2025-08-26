@@ -8,6 +8,13 @@ enum SceneType
 	SCENE_MAIN,
 };
 
+enum FadeState
+{
+	FADE_NONE,
+	FADE_OUT,
+	FADE_IN
+};
+
 class SceneManager
 {
 public:
@@ -29,5 +36,12 @@ private:
 	Title* m_title;
 	// SceneMainの変数
 	SceneMain* m_main;
+	// 次のシーン遷移保存用変数
+	SceneType m_nextScene;
+	// フェード制御
+	FadeState m_fadeState;
+	int m_fadeAlpha;
+	// フェードインが終了しているかどうか
+	bool m_hasFadeIn = false;
 };
 

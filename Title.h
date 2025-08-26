@@ -11,6 +11,8 @@ public:
 	void Draw();
 
 private:
+	// タイトル画面のグラフィックハンドル
+	int m_titleGraphHandle;
 	// BGMのグラフィックハンドル
 	int m_bgmHandle;
 

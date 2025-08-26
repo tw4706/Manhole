@@ -21,10 +21,10 @@ namespace
 	constexpr int kAttackCoolTime = 50;
 	constexpr int kWeakAttackCoolTime = 30;
 	//‹­UŒ‚‚Ì€”õŽžŠÔ
-	constexpr int kAttackPrep = 20;
+	constexpr int kAttackPrep = 10;
 	// UŒ‚‚ðŽó‚¯‚½Œã‚Ì–³“GŽžŠÔ
-	constexpr int kHurtDuration = 30;
-	constexpr int kWeakHurtDuration = 15;
+	constexpr int kHurtDuration = 50;
+	constexpr int kWeakHurtDuration = 30;
 	// “–‚½‚è”»’è‚Ì”¼Œa
 	constexpr float kDefaultRadius = 16.0f;
 	// ƒvƒŒƒCƒ„[‚ÌˆÚ“®‘¬“x
@@ -32,7 +32,7 @@ namespace
 	// ƒvƒŒƒCƒ„[‚ÌŠg‘å—¦
 	constexpr float kScale = 2.0f;
 	// ƒmƒbƒNƒoƒbƒN‚Ì‹——£
-	constexpr int knockBackDist = 60;
+	constexpr int knockBackDist = 70;
 	// d—Í
 	constexpr float kGravity = 1.5f;
 	// ’n–Ê‚Ì“–‚½‚è”»’è
@@ -40,7 +40,7 @@ namespace
 
 }
 
-Player::Player():
+Player::Player() :
 	m_handle(-1),
 	m_attackHandle(-1),
 	m_wAttackHandle(-1),
@@ -63,6 +63,8 @@ Player::Player():
 	m_gameOver(false),
 	m_currentFrame(0),
 	m_hasHit(false),
+	m_weakBgHandle(-1),
+	m_attackBgHandle(-1),
 	m_state(PlayerState::Idle),
 	m_attackType(AttackType::Normal),
 	m_otherPlayer(nullptr)
@@ -99,12 +101,20 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_gameOver = false;
 	m_currentFrame = 0;
 	m_hasHit = false;
+	m_weakBgHandle = LoadSoundMem("data/weak.mp3");
+	m_attackBgHandle = LoadSoundMem("data/attack.mp3");
 	m_state = PlayerState::Idle;
 	m_attackType = AttackType::Normal;
+	ChangeVolumeSoundMem(150,m_weakBgHandle);
+	ChangeVolumeSoundMem(150,m_attackBgHandle);
 }
 
 void Player::End()
 {
+	StopSoundMem(m_weakBgHandle);
+	DeleteSoundMem(m_weakBgHandle);
+	StopSoundMem(m_attackBgHandle);
+	DeleteSoundMem(m_attackBgHandle);
 }
 
 void Player::Update()
@@ -138,7 +148,7 @@ void Player::Update()
 	{
 		m_pos.y = kGround;
 	}
-	// ‹­UŒ‚‚ÌEŒ„”»’èiAttackó‘Ôj
+	// ‹­UŒ‚‚ÌUŒ‚”»’èiAttackó‘Ôj
 	if (m_state == PlayerState::Attack && (m_animFrame >= 3 && m_animFrame <= 5))
 	{
 		KnockBack();
@@ -279,6 +289,7 @@ void Player::UpdateState(int _input)
 			m_isAttack = true;
 			m_state = PlayerState::WeakAttack;
 			printfDx("ŽãUŒ‚‚µ‚½I\n");
+			PlaySoundMem(m_weakBgHandle, DX_PLAYTYPE_BACK);
 		}
 		break;
 
@@ -289,6 +300,7 @@ void Player::UpdateState(int _input)
 		if (m_attackPrepCount >= kAttackPrep)
 		{
 			m_state = PlayerState::Attack;
+			PlaySoundMem(m_attackBgHandle, DX_PLAYTYPE_BACK);
 			m_attackPrepCount = 0;
 			m_attackType = AttackType::Normal;
 			printfDx("‹­UŒ‚‚Ì€”õŠ®—¹!\n");
@@ -399,7 +411,7 @@ void Player::UpdateAnim()
 		animFrames = kIdleAnimNum;
 		break;
 	case PlayerState::AttackPrep:
-		animFrames = 1; 
+		animFrames = 2; 
 		break;
 	case PlayerState::Run:
 		animFrames = kRunAnimNum;
@@ -446,7 +458,7 @@ void Player::KnockBack()
 		// UŒ‚‚ÌŽí—Þ‚É‚æ‚Á‚ÄƒmƒbƒNƒoƒbƒN‚Ì”’l‚ð•Ï‚¦‚é
 		if (m_attackType == AttackType::Weak)
 		{
-			knockBackValue *= 0.35f;
+			knockBackValue *= 0.5f;
 		}
 
 		// ƒmƒbƒNƒoƒbƒN‚Ì•ûŒü
@@ -458,7 +470,6 @@ void Player::KnockBack()
 		{
 			m_otherPlayer->m_pos.x -= knockBackValue; // ¶‚É‚Á”ò‚Ô
 		}
-
 		m_otherPlayer->m_hurtCount = 0;
 		m_otherPlayer->m_state = PlayerState::Hurt;
 		m_otherPlayer->m_attackType = m_attackType;
