@@ -82,6 +82,8 @@ private:
 	bool m_gameOver;			// ゲームオーバーかどうか
 	int m_currentFrame;			// 現在のフレーム数
 	bool m_hasHit;				// 攻撃判定済みフラグ
+	int m_weakBgHandle;			// 弱攻撃のサウンド
+	int m_attackBgHandle;		// 強攻撃のサウンド
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)

@@ -3,8 +3,8 @@
 
 namespace
 {
-	constexpr int kManhole1Size = 64;
-	constexpr int kManhole2Size = 64;
+	constexpr int kManholeGraphWidth = 48;
+	constexpr int kManholeGraphHeight = 48;
 }
 
 Manhole::Manhole():
@@ -27,8 +27,8 @@ void Manhole::Init(int _handle1,int _handle2)
 	m_isHitManhole = false;
 	m_leftTriggerFlag = false;
 	m_rightTriggerFlag = false;
-	m_leftRect.init(130, 450, 96, 96);
-	m_rightRect.init(1100, 450, 96, 96);
+	m_leftRect.init(140, 470, kManholeGraphWidth+25, kManholeGraphHeight);
+	m_rightRect.init(1110, 470, kManholeGraphWidth+25, kManholeGraphHeight);
 }
 
 void Manhole::End()
@@ -94,6 +94,7 @@ bool Manhole::IsHitRight(const Rect& playerRect)
 	return false;
 }
 
+// ƒ}ƒ“ƒz[ƒ‹‚Ì“–‚½‚è”»’è‚ğÁ‚·
 void Manhole::DisableCollision(bool isLeft)
 {
 	if (isLeft)

@@ -45,6 +45,8 @@ private:
 	int m_bgmHandle;
 	// 勝利時のBGMハンドル
 	int m_winBgmHandle;
+	// ゲームオーバーのサウンド
+	int m_gameOverBgHandle;
 
 	// プレイヤー
 	Player*m_player1;
@@ -57,4 +59,3 @@ private:
 	// タイマー
 	Timer*m_roundTimer;
 };
-

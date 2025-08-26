@@ -25,6 +25,7 @@ SceneMain::SceneMain():
 	m_player2WinFlag(false),
 	m_bgmHandle(-1),
 	m_winBgmHandle(-1),
+	m_gameOverBgHandle(-1),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
@@ -71,9 +72,10 @@ void SceneMain::Init()
 	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
 	m_bgmHandle = LoadSoundMem("data/game.mp3");
-	ChangeVolumeSoundMem(10, m_bgmHandle);          // 音量の調整
+	ChangeVolumeSoundMem(150, m_bgmHandle);          // 音量の調整
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
-
+	m_gameOverBgHandle = LoadSoundMem("data/gameOver.mp3");
+	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
 
 	m_roundTimer->Init(300.0f);
 	m_roundTimer->Reset();
@@ -109,6 +111,8 @@ void SceneMain::End()
 	DeleteGraph(m_manhole2GraphHandle);
 	delete m_roundTimer;
 	DeleteSoundMem(m_bgmHandle);
+	StopSoundMem(m_gameOverBgHandle);
+	DeleteSoundMem(m_gameOverBgHandle);
 
 }
 
@@ -154,6 +158,7 @@ void SceneMain::Update()
 		m_player1->SetGameOver(true);
 		m_player2->SetGameOver(false);
 		m_roundTimer->Stop();
+		PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
 	}
 	// プレイヤー2が右マンホールに触れたら1の勝利
 	else if (m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
@@ -166,6 +171,7 @@ void SceneMain::Update()
 		m_player2->SetGameOver(true);
 		m_player1->SetGameOver(false);
 		m_roundTimer->Stop();
+		PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
 	}
 }
 
