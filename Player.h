@@ -81,6 +81,7 @@ private:
 	float m_fallSpeed;			// 落下速度
 	bool m_gameOver;			// ゲームオーバーかどうか
 	int m_currentFrame;			// 現在のフレーム数
+	bool m_hasHit;				// 攻撃判定済みフラグ
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)
