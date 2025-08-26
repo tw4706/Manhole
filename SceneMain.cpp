@@ -71,7 +71,7 @@ void SceneMain::Init()
 	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
 	m_bgmHandle = LoadSoundMem("data/game.mp3");
-	ChangeVolumeSoundMem(180, m_bgmHandle);          // ‰¹—Ê‚Ì’²®
+	ChangeVolumeSoundMem(10, m_bgmHandle);          // ‰¹—Ê‚Ì’²®
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ƒ‹[ƒvÄ¶
 
 

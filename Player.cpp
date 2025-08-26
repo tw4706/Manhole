@@ -62,6 +62,7 @@ Player::Player():
 	m_fallSpeed(0.0f),
 	m_gameOver(false),
 	m_currentFrame(0),
+	m_hasHit(false),
 	m_state(PlayerState::Idle),
 	m_attackType(AttackType::Normal),
 	m_otherPlayer(nullptr)
@@ -97,6 +98,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_fallSpeed = 0.0f;
 	m_gameOver = false;
 	m_currentFrame = 0;
+	m_hasHit = false;
 	m_state = PlayerState::Idle;
 	m_attackType = AttackType::Normal;
 }
@@ -136,11 +138,19 @@ void Player::Update()
 	{
 		m_pos.y = kGround;
 	}
-	// 攻撃判定フレーム（3フレーム目）だけ判定
-	if (m_animFrame == 3)
+	// 強攻撃の孔隙判定（Attack状態）
+	if (m_state == PlayerState::Attack && (m_animFrame >= 3 && m_animFrame <= 5))
 	{
 		KnockBack();
 	}
+
+	// 弱攻撃の攻撃判定（WeakAttack状態）
+	if (m_state == PlayerState::WeakAttack && (m_animFrame >= 2 && m_animFrame <= 3))
+	{
+		KnockBack();
+	}
+
+
 }
 
 void Player::Draw()
@@ -326,6 +336,7 @@ void Player::UpdateState(int _input)
 			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
 			// 攻撃カウントをリセット
 			m_attackCount = 0;
+			m_hasHit = false;
 		}
 		break;
 
@@ -346,6 +357,7 @@ void Player::UpdateState(int _input)
 			m_attackType = AttackType::Normal;// 攻撃タイプを通常に戻す
 			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
 			m_wAttackCount = 0;
+			m_hasHit = false;
 		}
 		break;
 	case PlayerState::Hurt:
@@ -425,6 +437,7 @@ bool Player::IsHurt() const
 //プレイヤーの攻撃(ノックバック)処理 
 void Player::KnockBack()
 {
+	// 相手プレイヤーがいない、または相手プレイヤーがHurt状態なら何もしない
 	if (!m_otherPlayer||m_otherPlayer->IsHurt()) return;
 
 	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
@@ -437,19 +450,21 @@ void Player::KnockBack()
 		}
 
 		// ノックバックの方向
-		if (m_pos.x < m_otherPlayer->m_pos.x)
+		if (!m_isTurn)
 		{
-			m_pos.x += knockBackValue; // 右に吹っ飛ぶ
+			m_otherPlayer->m_pos.x += knockBackValue; // 右に吹っ飛ぶ
 		}
 		else
 		{
-			m_pos.x -= knockBackValue; // 左に吹っ飛ぶ
+			m_otherPlayer->m_pos.x -= knockBackValue; // 左に吹っ飛ぶ
 		}
 
 		m_otherPlayer->m_hurtCount = 0;
 		m_otherPlayer->m_state = PlayerState::Hurt;
 		m_otherPlayer->m_attackType = m_attackType;
 		m_otherPlayer->m_animFrame = 0;
+
+		m_hasHit = true;
 	}
 }
 
