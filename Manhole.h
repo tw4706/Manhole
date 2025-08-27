@@ -13,20 +13,19 @@ public:
 	void Draw();
 
 	// プレイヤーがマンホールに当たっているかどうか
-	bool IsHitLeft(const Rect& playerRect);
-	bool IsHitRight(const Rect& playerRect);
-	// 片方のマンホールの当たり判定をなくす
-	void DisableCollision(bool isLeft);
+	bool CheckCollision(const Rect& playerRect);
+	bool CheckLeftCollision(const Rect& playerRect);
+	bool CheckRightCollision(const Rect& playerRect);
 
 private:
 	// マンホールのハンドル
-	int m_manhole1Handle;
-	int m_manhole2Handle;
+	int m_handle1;
+	int m_handle2;
 	// マンホールに当たっているか
-	bool m_isHitManhole;
-	bool m_leftTriggerFlag;
-	bool m_rightTriggerFlag;
-	Rect m_colRect; // 当たり判定用の矩形
+	bool m_leftTriggered;
+	bool m_rightTriggered;
+	// 当たり判定用の矩形
+	Rect m_colRect;
 	Rect m_leftRect;
 	Rect m_rightRect;
 

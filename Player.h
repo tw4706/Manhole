@@ -1,4 +1,5 @@
 #pragma once
+#include"Manhole.h"
 #include"Rect.h"
 #include"DxLib.h"
 #include"Vec2.h"
@@ -12,6 +13,7 @@ enum class PlayerState
 	Attack,		// 強攻撃
 	WeakAttack,	// 弱攻撃
 	Hurt,		// 攻撃を受けた
+	Fall		// 落下中
 };
 
 enum class AttackType
@@ -37,7 +39,7 @@ public:
 	Player();
 	~Player();
 
-	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,bool _isTurn);
+	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,int _fallHandle,bool _isTurn);
 	void End();
 	void Update();
 	void Draw();
@@ -51,8 +53,7 @@ public:
 	const Rect& GetCollisionRect() const;							// 当たり判定を取得するためのgetter関数
 	bool IsHurt()const;
 	void SetGameOver(bool isOver) { m_gameOver = isOver; }			// ゲームオーバーの判定
-	void SetFalling(bool isFalling) { m_isFalling = isFalling; }	// 落下中の判定
-	bool IsFalling()const;											// 落下中かどうかの判定
+	void CheckManholeCollision(Manhole* pManhole);					// マンホールとの当たり判定
 	// 先輩からのアドバイス:関数は動詞から始める
 	//　UpdateAnim
 	//　UpdateState
@@ -65,6 +66,7 @@ private:
 	int m_wAttackHandle;		// 弱攻撃のグラフィックのハンドル
 	int m_runHandle;			// 走るグラフィックのハンドル
 	int m_hurtHandle;			// 攻撃を受けた時のグラフィックのハンドル
+	int m_fallHandle;			// 落下中のグラフィックのハンドル
 	Vec2 m_pos;					// 座標
 	Vec2 m_centerPos;			// 当たり判定のサイズ座標
 	int m_padType;				// パッドの種類

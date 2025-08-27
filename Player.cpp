@@ -17,6 +17,7 @@ namespace
 	constexpr int kAttackAnimNum = 8;
 	constexpr int kWeakAttackAnimNum = 6;
 	constexpr int kHurtAnimNum = 2;	
+	constexpr int kFallAnimNum = 4;
 	// 攻撃クールタイム
 	constexpr int kAttackCoolTime = 50;
 	constexpr int kWeakAttackCoolTime = 30;
@@ -24,7 +25,7 @@ namespace
 	constexpr int kAttackPrep = 10;
 	// 攻撃を受けた後の無敵時間
 	constexpr int kHurtDuration = 50;
-	constexpr int kWeakHurtDuration = 30;
+	constexpr int kWeakHurtDuration = 20;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
 	// プレイヤーの移動速度
@@ -34,9 +35,11 @@ namespace
 	// ノックバックの距離
 	constexpr int knockBackDist = 70;
 	// 重力
-	constexpr float kGravity = 1.5f;
+	constexpr float kGravity = 0.8f;
 	// 地面の当たり判定
 	constexpr int kGround = 400;
+	// 落下速度の最大値
+	constexpr float kMaxFallSpeed = 10.0f;
 
 }
 
@@ -46,6 +49,7 @@ Player::Player() :
 	m_wAttackHandle(-1),
 	m_runHandle(-1),
 	m_hurtHandle(-1),
+	m_fallHandle(-1),
 	m_pos(0.0f, 0.0f),
 	m_centerPos(0.0f, 0.0f),
 	m_padType(0),
@@ -76,7 +80,7 @@ Player::~Player()
 
 }
 
-void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,bool _isTurn)
+void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,int _fallHandle,bool _isTurn)
 {
 	// 初期化
 	m_handle = _handle;
@@ -84,6 +88,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_wAttackHandle = _wAttackHandle;
 	m_runHandle = _runHandle;
 	m_hurtHandle = _hurtHandle;
+	m_fallHandle = _fallHandle;
 	m_pos = _firstPos;
 	m_centerPos = Vec2(0.0f, 0.0f);
 	m_padType = _padType;
@@ -159,8 +164,6 @@ void Player::Update()
 	{
 		KnockBack();
 	}
-
-
 }
 
 void Player::Draw()
@@ -212,6 +215,13 @@ void Player::Draw()
 		animNum = (m_animFrame / kAnimWaitFrame) % kHurtAnimNum;
 		handle = m_hurtHandle;
 		srcY = 0;
+		break;
+	}
+	case PlayerState::Fall:			// 落下中
+	{
+		animNum = (m_animFrame / kAnimWaitFrame) % kFallAnimNum;
+		handle = m_fallHandle;
+		srcY = kGraphHeight; // 落下アニメーションは2行目にあると仮定
 		break;
 	}
 	}
@@ -279,16 +289,16 @@ void Player::UpdateState(int _input)
 			m_state = PlayerState::AttackPrep;
 			m_attackCount = 0;
 			m_isAttack = true;
-			printfDx("攻撃した！\n");
+			//printfDx("攻撃した！\n");
 		}
 		else if (!m_isAttack && (_input & PAD_INPUT_B))
 		{
-			printfDx("Bボタンを押した！\n");
+			//printfDx("Bボタンを押した！\n");
 			m_attackType = AttackType::Weak;
 			m_wAttackCount = 0;
 			m_isAttack = true;
 			m_state = PlayerState::WeakAttack;
-			printfDx("弱攻撃した！\n");
+			//printfDx("弱攻撃した！\n");
 			PlaySoundMem(m_weakBgHandle, DX_PLAYTYPE_BACK);
 		}
 		break;
@@ -303,7 +313,7 @@ void Player::UpdateState(int _input)
 			PlaySoundMem(m_attackBgHandle, DX_PLAYTYPE_BACK);
 			m_attackPrepCount = 0;
 			m_attackType = AttackType::Normal;
-			printfDx("強攻撃の準備完了!\n");
+			//printfDx("強攻撃の準備完了!\n");
 		}
 		break;
 	}
@@ -337,7 +347,7 @@ void Player::UpdateState(int _input)
 			m_state = PlayerState::Attack;
 			m_attackCount = 0;
 			m_isAttack = true;
-			printfDx("攻撃！\n");
+			//printfDx("攻撃！\n");
 		}
 
 		// 攻撃のカウントがクールタイムを超えたら
@@ -359,7 +369,7 @@ void Player::UpdateState(int _input)
 			m_state = PlayerState::WeakAttack;
 			m_attackCount = 0;
 			m_isAttack = true;
-			printfDx("弱パンチ！\n");
+			//printfDx("弱パンチ！\n");
 		}
 
 		if (m_wAttackCount > kWeakAttackCoolTime)
@@ -381,7 +391,7 @@ void Player::UpdateState(int _input)
 			m_state = PlayerState::Idle;
 			m_hurtCount = 0;
 			m_attackType = AttackType::Normal;
-			printfDx("Hurt終了\n");
+			//printfDx("Hurt終了\n");
 			m_oldInput = _input; // 前回の入力状態を更新
 		}
 		return;
@@ -392,6 +402,33 @@ void Player::UpdateState(int _input)
 			m_animFrame = 0;
 		}
 		m_oldInput = _input; // 前回の入力状態を更新
+		break;	
+	case PlayerState::Fall:
+		if (m_isFalling && m_state != PlayerState::Fall)
+		{
+			m_state = PlayerState::Fall;
+			m_animFrame = 0; // アニメーションフレームをリセット
+			printfDx("state==%d\n", m_state);
+		}
+
+		if (m_isFalling)
+		{
+			//printfDx("Fall");
+			m_fallSpeed += kGravity; // 落下速度を増加させる
+			if (m_fallSpeed > kMaxFallSpeed)
+			{
+				m_fallSpeed = kMaxFallSpeed;
+			}
+			m_pos.y += m_fallSpeed;  // プレイヤーの位置を更新する
+			// 画面外に落ちたらゲームオーバー
+			if (m_pos.y > 500)
+			{
+				m_gameOver = true;
+				//printfDx("ゲームオーバー\n");
+			}
+		}
+		m_oldInput = _input; // 前回の入力状態を更新
+		return;
 	}
 }
 
@@ -425,6 +462,9 @@ void Player::UpdateAnim()
 	case PlayerState::Hurt:
 		animFrames = kHurtAnimNum;
 		break;
+	case PlayerState::Fall:
+		animFrames = kFallAnimNum;
+		break;
 	}
 
 	// アニメーションフレームを更新
@@ -444,6 +484,28 @@ const Rect& Player::GetCollisionRect() const
 bool Player::IsHurt() const
 {
 	return m_state == PlayerState::Hurt;
+}
+
+void Player::CheckManholeCollision(Manhole* manhole)
+{
+	if (m_state == PlayerState::Fall || m_gameOver)return;
+
+	if (manhole->CheckLeftCollision(m_colRect))
+	{
+		m_state = PlayerState::Fall;
+		m_animFrame = 0;
+		m_isFalling = true;
+		m_fallSpeed = 0.0f;
+		//printfDx("左のマンホールに落ちた\n");
+	}
+	else if (manhole->CheckRightCollision(m_colRect))
+	{
+		m_state = PlayerState::Fall;
+		m_animFrame = 0;
+		m_fallSpeed = 0.0f;
+		m_isFalling = true;
+		//printfDx("右のマンホールに落ちた\n");
+	}
 }
 
 //プレイヤーの攻撃(ノックバック)処理 
@@ -477,9 +539,4 @@ void Player::KnockBack()
 
 		m_hasHit = true;
 	}
-}
-
-bool Player::IsFalling() const
-{
-	return m_isFalling;
 }

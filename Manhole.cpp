@@ -8,11 +8,10 @@ namespace
 }
 
 Manhole::Manhole():
-	m_manhole1Handle(-1),
-	m_manhole2Handle(-1),
-	m_isHitManhole(false),
-	m_leftTriggerFlag(false),
-	m_rightTriggerFlag(false)
+	m_handle1(-1),
+	m_handle2(-1),
+	m_leftTriggered(false), 
+	m_rightTriggered(false)
 {
 }
 
@@ -22,13 +21,10 @@ Manhole::~Manhole()
 
 void Manhole::Init(int _handle1,int _handle2)
 {
-	m_manhole1Handle = _handle1;
-	m_manhole2Handle = _handle2;
-	m_isHitManhole = false;
-	m_leftTriggerFlag = false;
-	m_rightTriggerFlag = false;
-	m_leftRect.init(140, 470, kManholeGraphWidth+25, kManholeGraphHeight);
-	m_rightRect.init(1110, 470, kManholeGraphWidth+25, kManholeGraphHeight);
+	m_handle1 = _handle1;
+	m_handle2 = _handle2;
+	m_leftRect.init(120, 460, kManholeGraphWidth+25, kManholeGraphHeight);
+	m_rightRect.init(1120, 460, kManholeGraphWidth+25, kManholeGraphHeight);
 }
 
 void Manhole::End()
@@ -43,73 +39,56 @@ void Manhole::Update()
 
 void Manhole::Draw()
 {
-	if (!m_leftTriggerFlag) 
-	{
-		DrawExtendGraph(130, 450, 130 + 96, 450 + 96, m_manhole1Handle, true);
-	}
+		DrawExtendGraph(
+			static_cast<int>(m_leftRect.m_left),
+			static_cast<int>(m_leftRect.m_top),
+			static_cast<int>(m_leftRect.m_right),
+			static_cast<int>(m_leftRect.m_bottom),
+			m_handle1, TRUE);
+		//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
 
-	if (!m_rightTriggerFlag) 
-	{
-		DrawExtendGraph(1100, 450, 1100 + 96, 450 + 96, m_manhole2Handle, true);
-	}
+		DrawExtendGraph(
+			static_cast<int>(m_rightRect.m_left),
+			static_cast<int>(m_rightRect.m_top),
+			static_cast<int>(m_rightRect.m_right),
+			static_cast<int>(m_rightRect.m_bottom),
+			m_handle2, TRUE);
+
+		//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
+
 
 #ifdef _DEBUG
 	// 左マンホールの当たり判定
-	if (!m_leftTriggerFlag)
+	if (!m_leftTriggered)
 	{
 		m_leftRect.Draw(0xFF0000, false); // 赤色で枠線表示
 	}
 
 	// 右マンホールの当たり判定
-	if (!m_rightTriggerFlag)
+	if (!m_rightTriggered)
 	{
 		m_rightRect.Draw(0x0000FF, false); // 青色で枠線表示
 	}
-	
 #endif
-
 }
 
-bool Manhole::IsHitLeft(const Rect& playerRect)
+bool Manhole::CheckLeftCollision(const Rect& playerRect)
 {
-    if (m_leftTriggerFlag) return false; // 当たっている場合は当たり判定を無効化
-    if (m_leftRect.IsCollision(playerRect))
-    {
-        m_leftTriggerFlag = true;
-		printfDx("左マンホールの描画をスキップ\n");
-        return true;
-    }
-    return false;
-}
-
-// 右のマンホールの当たり判定取得
-bool Manhole::IsHitRight(const Rect& playerRect)
-{
-	if (m_rightTriggerFlag) return false; // 当たっている場合は当たり判定を無効化
-	if (m_rightRect.IsCollision(playerRect))
+	if (!m_leftTriggered && m_leftRect.IsCollision(playerRect))
 	{
-		m_rightTriggerFlag = true;
+		m_leftTriggered = true;
 		return true;
 	}
 	return false;
 }
 
-// マンホールの当たり判定を消す
-void Manhole::DisableCollision(bool isLeft)
+bool Manhole::CheckRightCollision(const Rect& playerRect)
 {
-	if (isLeft)
+	if (!m_rightTriggered && m_rightRect.IsCollision(playerRect))
 	{
-		m_leftTriggerFlag = true;
-		m_leftRect.init(-9999, -9999, 0, 0);
+		m_rightTriggered = true;
+		return true;
 	}
-	else
-	{
-		m_rightTriggerFlag = true;
-		m_rightRect.init(-9999, -9999, 0, 0);
-	}
-	printfDx("Disが呼ばれた！");
+
+	return false;
 }
-
-
-
-
