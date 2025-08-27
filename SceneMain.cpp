@@ -17,6 +17,8 @@ SceneMain::SceneMain():
 	m_player2RunGraphHandle(-1),
 	m_player1HurtGraphHandle(-1),
 	m_player2HurtGraphHandle(-1),
+	m_player1FallGraphHandle(-1),
+	m_player2FallGraphHandle(-1),
 	m_manhole1GraphHandle(-1),
 	m_manhole2GraphHandle(-1),
 	m_timer(0),
@@ -29,8 +31,7 @@ SceneMain::SceneMain():
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
-	m_manhole1(nullptr),
-	m_manhole2(nullptr),
+	m_manhole(nullptr),
 	m_roundTimer(nullptr)
 {
 
@@ -49,8 +50,7 @@ void SceneMain::Init()
 	m_player1 = new Player();	
 	m_player2 = new Player();
 	m_Bg = new Bg();
-	m_manhole1 = new Manhole();
-	m_manhole2 = new Manhole();
+	m_manhole = new Manhole();
 	m_roundTimer = new Timer();
 
 	// プレイヤーのゲームオーバーフラグを初期化
@@ -69,10 +69,12 @@ void SceneMain::Init()
 	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
 	m_player1HurtGraphHandle = LoadGraph("data/Player1.hurt.png");
 	m_player2HurtGraphHandle = LoadGraph("data/Player2.hurt.png");
+	m_player1FallGraphHandle = LoadGraph("data/Fall.png");
+	m_player2FallGraphHandle = LoadGraph("data/Fall1.png");
 	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
 	m_bgmHandle = LoadSoundMem("data/game.mp3");
-	ChangeVolumeSoundMem(150, m_bgmHandle);          // 音量の調整
+	ChangeVolumeSoundMem(110, m_bgmHandle);          // 音量の調整
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
 	m_gameOverBgHandle = LoadSoundMem("data/gameOver.mp3");
 	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
@@ -80,11 +82,14 @@ void SceneMain::Init()
 	m_roundTimer->Init(300.0f);
 	m_roundTimer->Reset();
 	m_roundTimer->Start();
-	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,m_player1AttackGraphHandle, m_player1WeakAttackGraphHandle,m_player1RunGraphHandle,m_player1HurtGraphHandle,false);
-	m_player2->Init(DX_INPUT_PAD2,Vec2(800, 480), m_player2GraphHandle, m_player2AttackGraphHandle, m_player2WeakAttackGraphHandle, m_player2RunGraphHandle, m_player2HurtGraphHandle,true);
+	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,
+		m_player1AttackGraphHandle, m_player1WeakAttackGraphHandle,
+		m_player1RunGraphHandle,m_player1HurtGraphHandle,m_player1FallGraphHandle,false);
+	m_player2->Init(DX_INPUT_PAD2,Vec2(840, 480), m_player2GraphHandle,
+		m_player2AttackGraphHandle, m_player2WeakAttackGraphHandle,
+		m_player2RunGraphHandle, m_player2HurtGraphHandle, m_player2FallGraphHandle,true);
 	m_Bg->Init();
-	m_manhole1->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
-	m_manhole2->Init(m_manhole1GraphHandle, m_manhole2GraphHandle);
+	m_manhole->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 
 }
 
@@ -93,8 +98,7 @@ void SceneMain::End()
 	m_player1->End();	// プレイヤーの終了処理
 	m_player2->End();
 	m_Bg->End();		// 背景の終了処理
-	m_manhole1->End();	// マンホールの終了処理
-	m_manhole2->End();
+	m_manhole->End();	// マンホールの終了処理
 	m_roundTimer->End();// タイマーの終了処理
 	// グラフィックの解放
 	DeleteGraph(m_player1GraphHandle);
@@ -113,7 +117,6 @@ void SceneMain::End()
 	DeleteSoundMem(m_bgmHandle);
 	StopSoundMem(m_gameOverBgHandle);
 	DeleteSoundMem(m_gameOverBgHandle);
-
 }
 
 void SceneMain::Update()
@@ -124,6 +127,17 @@ void SceneMain::Update()
 	// ゲームのリスタート
 	if (m_gameOver)
 	{
+		// 勝者は動くことが可能
+		if (m_player2WinFlag)
+		{
+			m_player1->Update();
+			m_player2->Update();
+		}
+		else if (m_player1WinFlag)
+		{
+			m_player1->Update();
+			m_player2->Update();
+		}
 		StopSoundMem(m_bgmHandle);
 		// Rキーが押されたらリスタート
 		if (CheckHitKey(KEY_INPUT_R))
@@ -138,36 +152,32 @@ void SceneMain::Update()
 	{
 		printfDx("時間切れ!");
 		// ゲームオーバーにする
-		m_gameOver = true; 
 	}
 	m_player1->SetOtherPlayer(m_player2);
 	m_player2->SetOtherPlayer(m_player1);
 	m_player2->Update();
 	m_player1->Update();
 	m_Bg->Update();
-	m_manhole1->Update();
-	m_manhole2->Update();
+	m_manhole->Update();
 	// プレイヤー1が左マンホールに触れたら2の勝利
-	if (m_manhole1->IsHitLeft(m_player1->GetCollisionRect()))
+	if (m_manhole->CheckLeftCollision(m_player1->GetCollisionRect()))
 	{
+		m_player1->CheckManholeCollision(m_manhole);
 		//printfDx("プレイヤー2の勝利!");
-		m_player1->SetFalling(true);
 		m_gameOver = true;
 		m_player2WinFlag = true;
-		m_manhole1->DisableCollision(true);
 		m_player1->SetGameOver(true);
 		m_player2->SetGameOver(false);
 		m_roundTimer->Stop();
 		PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
 	}
 	// プレイヤー2が右マンホールに触れたら1の勝利
-	else if (m_manhole2->IsHitRight(m_player2->GetCollisionRect()))
+	else if (m_manhole->CheckRightCollision(m_player2->GetCollisionRect()))
 	{
+		m_player2->CheckManholeCollision(m_manhole);
 		//printfDx("プレイヤー1の勝利！");
-		m_player2->SetFalling(true);
 		m_gameOver = true;
 		m_player1WinFlag = true;
-		m_manhole2->DisableCollision(true);
 		m_player2->SetGameOver(true);
 		m_player1->SetGameOver(false);
 		m_roundTimer->Stop();
@@ -179,11 +189,10 @@ void SceneMain::Draw()
 {
 	// 描画(後に描画したものが前に出る)
 	m_Bg->Draw();
-	m_manhole1->Draw();
-	m_manhole2->Draw();
 	m_player1->Draw();
 	m_player2->Draw();
 	m_roundTimer->Draw(640, 600);
+	m_manhole->Draw();
 	// 点滅用の処理
 	int now = GetNowCount();
 	// 500ミリ秒ごとに点滅する
@@ -195,15 +204,6 @@ void SceneMain::Draw()
 	else if (m_player2WinFlag && blink)
 	{
 		DrawFormatString(350, 100, GetColor(255, 0, 0), "プレイヤー2の勝利！");
-	}
-	// 勝者は動くことが可能
-	if (m_player1WinFlag)
-	{
-		m_player1->Update();
-	}
-	else if (m_player2WinFlag)
-	{
-		m_player2->Update();
 	}
 
 	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));

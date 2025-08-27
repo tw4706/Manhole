@@ -70,5 +70,3 @@ bool Rect::IsCollision(const Rect& rect)
 	// ‚»‚êˆÈŠO‚Í“–‚½‚Á‚Ä‚¢‚é
 	return true;
 }
-
-

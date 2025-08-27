@@ -31,6 +31,9 @@ private:
 	// プレイヤーの攻撃を受けた時のハンドル
 	int m_player1HurtGraphHandle;
 	int m_player2HurtGraphHandle;
+	// プレイヤーの落下中のグラフィックハンドル
+	int m_player1FallGraphHandle;
+	int m_player2FallGraphHandle;
 	// マンホールのグラフィックハンドル
 	int m_manhole1GraphHandle;
 	int m_manhole2GraphHandle;
@@ -54,8 +57,7 @@ private:
 	// 背景
 	Bg* m_Bg;
 	// マンホール
-	Manhole* m_manhole1;
-	Manhole* m_manhole2;
+	Manhole* m_manhole;
 	// タイマー
 	Timer*m_roundTimer;
 };
