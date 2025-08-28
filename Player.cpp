@@ -40,6 +40,12 @@ namespace
 	constexpr int kGround = 400;
 	// 落下速度の最大値
 	constexpr float kMaxFallSpeed = 15.0f;
+	// 攻撃判定のフレーム
+	constexpr int kAttackActiveStartFrame = 3;
+	constexpr int kAttackActiveEndFrame = 5;
+	constexpr int kWeakAttackStartFrame = 2;
+	constexpr int kWeakAttackEndFrame = 3;
+
 
 }
 
@@ -90,6 +96,7 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_hurtHandle = _hurtHandle;
 	m_fallHandle = _fallHandle;
 	m_pos = _firstPos;
+	m_pos.y = kGround;
 	m_centerPos = Vec2(0.0f, 0.0f);
 	m_padType = _padType;
 	m_radius = kDefaultRadius;
@@ -143,7 +150,29 @@ void Player::Update()
 	}
 
 	//	コントローラーのボタンの押された状態を取得する
-	int input = GetJoypadInputState(m_padType);
+	int padInput = GetJoypadInputState(m_padType);
+	int keyInput = 0;
+
+	if (m_padType == DX_INPUT_PAD1)
+	{
+		if (CheckHitKey(KEY_INPUT_Z))     keyInput |= PAD_INPUT_A;
+		if (CheckHitKey(KEY_INPUT_X))	keyInput |= PAD_INPUT_B;
+		if (CheckHitKey(KEY_INPUT_A))  keyInput |= PAD_INPUT_LEFT;
+		if (CheckHitKey(KEY_INPUT_D)) keyInput |= PAD_INPUT_RIGHT;
+		if (CheckHitKey(KEY_INPUT_W))    keyInput |= PAD_INPUT_UP;
+		if (CheckHitKey(KEY_INPUT_S))  keyInput |= PAD_INPUT_DOWN;
+	}
+	else if (m_padType == DX_INPUT_PAD2)
+	{
+		if (CheckHitKey(KEY_INPUT_K))     keyInput |= PAD_INPUT_A;
+		if (CheckHitKey(KEY_INPUT_M))	keyInput |= PAD_INPUT_B;
+		if (CheckHitKey(KEY_INPUT_LEFT))  keyInput |= PAD_INPUT_LEFT;
+		if (CheckHitKey(KEY_INPUT_RIGHT)) keyInput |= PAD_INPUT_RIGHT;
+		if (CheckHitKey(KEY_INPUT_UP))    keyInput |= PAD_INPUT_UP;
+		if (CheckHitKey(KEY_INPUT_DOWN))  keyInput |= PAD_INPUT_DOWN;
+	}
+	int input = padInput | keyInput; // 両方の入力を統合
+
 	// プレイヤーの状態の更新
 	UpdateState(input);
 	// プレイヤーのアニメーションの更新
@@ -154,16 +183,21 @@ void Player::Update()
 		m_pos.y = kGround;
 	}
 	// 強攻撃の攻撃判定（Attack状態）
-	if (m_state == PlayerState::Attack && (m_animFrame >= 3 && m_animFrame <= 5))
+	if (m_state == PlayerState::Attack &&
+		m_animFrame >= kAttackActiveStartFrame &&
+		m_animFrame <= kAttackActiveEndFrame)
 	{
 		KnockBack();
 	}
 
 	// 弱攻撃の攻撃判定（WeakAttack状態）
-	if (m_state == PlayerState::WeakAttack && (m_animFrame >= 2 && m_animFrame <= 3))
+	if (m_state == PlayerState::WeakAttack &&
+		m_animFrame >= kWeakAttackStartFrame &&
+		m_animFrame <= kWeakAttackEndFrame)
 	{
 		KnockBack();
 	}
+
 }
 
 void Player::Draw()
@@ -385,16 +419,15 @@ void Player::UpdateState(int _input)
 	case PlayerState::Hurt:
 		m_hurtCount++;
 		// 攻撃を受けた後の無敵時間を経過したら通常状態に戻す
-		if ((m_attackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
-			(m_attackType == AttackType::Normal && m_hurtCount > kHurtDuration))
+		if ((m_receivedAttackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
+			(m_receivedAttackType == AttackType::Normal && m_hurtCount > kHurtDuration))
 		{
 			m_state = PlayerState::Idle;
 			m_hurtCount = 0;
-			m_attackType = AttackType::Normal;
-			//printfDx("Hurt終了\n");
-			m_oldInput = _input; // 前回の入力状態を更新
+			m_receivedAttackType = AttackType::Normal;
+			m_oldInput = _input;
 		}
-		return;
+		break;
 
 		// 状態が切り替わったらアニメーションフレームをリセット
 		if (saveState != m_state)
@@ -511,32 +544,39 @@ void Player::CheckManholeCollision(Manhole* manhole)
 //プレイヤーの攻撃(ノックバック)処理 
 void Player::KnockBack()
 {
-	// 相手プレイヤーがいない、または相手プレイヤーがHurt状態なら何もしない
-	if (!m_otherPlayer||m_otherPlayer->IsHurt()) return;
+	if (!m_otherPlayer) return;
+
+	// 攻撃を記録
+	m_otherPlayer->m_receivedAttackType = m_attackType;
+
+	// 両者が攻撃中なら相打ちを成立させる
+	bool bothAttacking = (m_state == PlayerState::Attack || m_state == PlayerState::WeakAttack) &&
+		(m_otherPlayer->m_state == PlayerState::Attack || m_otherPlayer->m_state == PlayerState::WeakAttack);
 
 	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{
-		float knockBackValue = knockBackDist;
-		// 攻撃の種類によってノックバックの数値を変える
-		if (m_attackType == AttackType::Weak)
+		// ダメージを受けた状態
+		if (!m_otherPlayer->IsHurt())
 		{
-			knockBackValue *= 0.5f;
+			float knockBackValue = (m_attackType == AttackType::Weak) ? knockBackDist * 0.5f : knockBackDist;
+			m_otherPlayer->m_pos.x += m_isTurn ? -knockBackValue : knockBackValue;
+			m_otherPlayer->m_state = PlayerState::Hurt;
+			m_otherPlayer->m_hurtCount = 0;
+			m_otherPlayer->m_attackType = m_attackType;
+			m_otherPlayer->m_animFrame = 0;
+			m_hasHit = true;
 		}
 
-		// ノックバックの方向
-		if (!m_isTurn)
+		if (bothAttacking && !IsHurt())
 		{
-			m_otherPlayer->m_pos.x += knockBackValue; // 右に吹っ飛ぶ
+			float knockBackValue = (m_otherPlayer->m_attackType == AttackType::Weak) ? knockBackDist * 0.5f : knockBackDist;
+			m_pos.x += m_otherPlayer->m_isTurn ? -knockBackValue : knockBackValue;
+			m_state = PlayerState::Hurt;
+			m_isAttack = false;
+			m_hurtCount = 0;
+			m_attackType = m_otherPlayer->m_attackType;
+			m_animFrame = 0;
+			m_otherPlayer->m_hasHit = true;
 		}
-		else
-		{
-			m_otherPlayer->m_pos.x -= knockBackValue; // 左に吹っ飛ぶ
-		}
-		m_otherPlayer->m_hurtCount = 0;
-		m_otherPlayer->m_state = PlayerState::Hurt;
-		m_otherPlayer->m_attackType = m_attackType;
-		m_otherPlayer->m_animFrame = 0;
-
-		m_hasHit = true;
 	}
 }

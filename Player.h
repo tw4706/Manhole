@@ -89,8 +89,8 @@ private:
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)
+	AttackType m_receivedAttackType;// 攻撃状態保存用
 	std::vector<Attack> m_pendingAttacks;
-
 protected:
 	// 当たり判定の矩形
 	Rect m_colRect;	
