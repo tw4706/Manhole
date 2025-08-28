@@ -14,6 +14,7 @@ private:
 	// タイトル画面のグラフィックハンドル
 	int m_titleGraphHandle;
 	int m_titleLogoHandle;
+	int m_titleStrHandle;
 	// BGMのグラフィックハンドル
 	int m_bgmHandle;
 
