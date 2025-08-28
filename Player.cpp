@@ -35,11 +35,11 @@ namespace
 	// ノックバックの距離
 	constexpr int knockBackDist = 70;
 	// 重力
-	constexpr float kGravity = 0.8f;
+	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
 	constexpr int kGround = 400;
 	// 落下速度の最大値
-	constexpr float kMaxFallSpeed = 10.0f;
+	constexpr float kMaxFallSpeed = 15.0f;
 
 }
 
