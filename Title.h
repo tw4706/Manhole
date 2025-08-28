@@ -13,6 +13,7 @@ public:
 private:
 	// タイトル画面のグラフィックハンドル
 	int m_titleGraphHandle;
+	int m_titleLogoHandle;
 	// BGMのグラフィックハンドル
 	int m_bgmHandle;
 

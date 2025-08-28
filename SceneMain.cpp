@@ -90,7 +90,6 @@ void SceneMain::Init()
 		m_player2RunGraphHandle, m_player2HurtGraphHandle, m_player2FallGraphHandle,true);
 	m_Bg->Init();
 	m_manhole->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
-
 }
 
 void SceneMain::End()
@@ -205,6 +204,5 @@ void SceneMain::Draw()
 	{
 		DrawFormatString(350, 100, GetColor(255, 0, 0), "プレイヤー2の勝利！");
 	}
-
 	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));
 }
