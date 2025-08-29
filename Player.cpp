@@ -1,7 +1,6 @@
 #include "Player.h"
 #include "SceneMain.h"
 #include"Dxlib.h"
-#include <algorithm>
 
 namespace
 {
@@ -24,7 +23,7 @@ namespace
 	//強攻撃の準備時間
 	constexpr int kAttackPrep = 10;
 	// 攻撃を受けた後の無敵時間
-	constexpr int kHurtDuration = 50;
+	constexpr int kHurtDuration = 40;
 	constexpr int kWeakHurtDuration = 20;
 	// 当たり判定の半径
 	constexpr float kDefaultRadius = 16.0f;
@@ -76,8 +75,9 @@ Player::Player() :
 	m_weakBgHandle(-1),
 	m_attackBgHandle(-1),
 	m_state(PlayerState::Idle),
-	m_attackType(AttackType::Normal),
-	m_otherPlayer(nullptr)
+	m_attackType(AttackType::None),
+	m_otherPlayer(nullptr),
+	m_receivedAttackType(AttackType::None)
 {
 }
 
@@ -116,7 +116,8 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_weakBgHandle = LoadSoundMem("data/weak.mp3");
 	m_attackBgHandle = LoadSoundMem("data/attack.mp3");
 	m_state = PlayerState::Idle;
-	m_attackType = AttackType::Normal;
+	m_attackType = AttackType::None;
+	m_receivedAttackType = AttackType::None;
 	ChangeVolumeSoundMem(150,m_weakBgHandle);
 	ChangeVolumeSoundMem(150,m_attackBgHandle);
 }
@@ -185,7 +186,8 @@ void Player::Update()
 	// 強攻撃の攻撃判定（Attack状態）
 	if (m_state == PlayerState::Attack &&
 		m_animFrame >= kAttackActiveStartFrame &&
-		m_animFrame <= kAttackActiveEndFrame)
+		m_animFrame <= kAttackActiveEndFrame&&
+		!m_hasHit)
 	{
 		KnockBack();
 	}
@@ -193,11 +195,11 @@ void Player::Update()
 	// 弱攻撃の攻撃判定（WeakAttack状態）
 	if (m_state == PlayerState::WeakAttack &&
 		m_animFrame >= kWeakAttackStartFrame &&
-		m_animFrame <= kWeakAttackEndFrame)
+		m_animFrame <= kWeakAttackEndFrame&&
+		!m_hasHit)
 	{
 		KnockBack();
 	}
-
 }
 
 void Player::Draw()
@@ -318,14 +320,14 @@ void Player::UpdateState(int _input)
 		{
 			m_state = PlayerState::Run;
 		}
-		else if (!m_isAttack && (_input & PAD_INPUT_A))
+		else if ((_input & PAD_INPUT_A))
 		{
 			m_state = PlayerState::AttackPrep;
 			m_attackCount = 0;
 			m_isAttack = true;
 			//printfDx("攻撃した！\n");
 		}
-		else if (!m_isAttack && (_input & PAD_INPUT_B))
+		else if ((_input & PAD_INPUT_B))
 		{
 			//printfDx("Bボタンを押した！\n");
 			m_attackType = AttackType::Weak;
@@ -418,24 +420,19 @@ void Player::UpdateState(int _input)
 		break;
 	case PlayerState::Hurt:
 		m_hurtCount++;
+		printfDx("HurtCount:%d\n", m_hurtCount);
 		// 攻撃を受けた後の無敵時間を経過したら通常状態に戻す
 		if ((m_receivedAttackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
 			(m_receivedAttackType == AttackType::Normal && m_hurtCount > kHurtDuration))
 		{
-			m_state = PlayerState::Idle;
 			m_hurtCount = 0;
-			m_receivedAttackType = AttackType::Normal;
-			m_oldInput = _input;
+			m_receivedAttackType = AttackType::None;
+			m_otherPlayer->m_state = PlayerState::Idle;
+
+			m_isAttack = false;
+			m_hasHit = false;
 		}
 		break;
-
-		// 状態が切り替わったらアニメーションフレームをリセット
-		if (saveState != m_state)
-		{
-			m_animFrame = 0;
-		}
-		m_oldInput = _input; // 前回の入力状態を更新
-		break;	
 	case PlayerState::Fall:
 		if (m_isFalling && m_state != PlayerState::Fall)
 		{
@@ -460,9 +457,9 @@ void Player::UpdateState(int _input)
 				//printfDx("ゲームオーバー\n");
 			}
 		}
-		m_oldInput = _input; // 前回の入力状態を更新
 		return;
 	}
+	m_oldInput = _input; // 前回の入力状態を更新
 }
 
 // プレイヤーの移動反転処理
@@ -544,18 +541,40 @@ void Player::CheckManholeCollision(Manhole* manhole)
 //プレイヤーの攻撃(ノックバック)処理 
 void Player::KnockBack()
 {
-	if (!m_otherPlayer) return;
+	if (m_hasHit || m_otherPlayer->m_hasHit) return;
 
-	// 攻撃を記録
-	m_otherPlayer->m_receivedAttackType = m_attackType;
-
-	// 両者が攻撃中なら相打ちを成立させる
+	// 両者が攻撃中なら相打ち
 	bool bothAttacking = (m_state == PlayerState::Attack || m_state == PlayerState::WeakAttack) &&
 		(m_otherPlayer->m_state == PlayerState::Attack || m_otherPlayer->m_state == PlayerState::WeakAttack);
-
 	if (m_colRect.IsCollision(m_otherPlayer->GetCollisionRect()))
 	{
-		// ダメージを受けた状態
+		if (bothAttacking)
+		{
+			// 相打ち処理（両者を同時にHurt）
+			float knockBackValueA = (m_attackType == AttackType::Weak) ? knockBackDist * 0.5f : knockBackDist;
+			float knockBackValueB = (m_otherPlayer->m_attackType == AttackType::Weak) ? knockBackDist * 0.5f : knockBackDist;
+
+			m_pos.x += m_otherPlayer->m_isTurn ? -knockBackValueB : knockBackValueB;
+			m_otherPlayer->m_pos.x += m_isTurn ? -knockBackValueA : knockBackValueA;
+
+			m_state = PlayerState::Hurt;
+			m_otherPlayer->m_state = PlayerState::Hurt;
+
+			m_hurtCount = 0;
+			m_otherPlayer->m_hurtCount = 0;
+
+			m_receivedAttackType = m_otherPlayer->m_attackType;
+			m_otherPlayer->m_receivedAttackType = m_attackType;
+
+			m_animFrame = 0;
+			m_otherPlayer->m_animFrame = 0;
+			m_hasHit = true;
+			m_otherPlayer->m_hasHit = true;
+
+			return; // 相打ちで終了
+		}
+
+		// 攻撃処理（相手が攻撃中でない場合）
 		if (!m_otherPlayer->IsHurt())
 		{
 			float knockBackValue = (m_attackType == AttackType::Weak) ? knockBackDist * 0.5f : knockBackDist;
@@ -565,18 +584,6 @@ void Player::KnockBack()
 			m_otherPlayer->m_attackType = m_attackType;
 			m_otherPlayer->m_animFrame = 0;
 			m_hasHit = true;
-		}
-
-		if (bothAttacking && !IsHurt())
-		{
-			float knockBackValue = (m_otherPlayer->m_attackType == AttackType::Weak) ? knockBackDist * 0.5f : knockBackDist;
-			m_pos.x += m_otherPlayer->m_isTurn ? -knockBackValue : knockBackValue;
-			m_state = PlayerState::Hurt;
-			m_isAttack = false;
-			m_hurtCount = 0;
-			m_attackType = m_otherPlayer->m_attackType;
-			m_animFrame = 0;
-			m_otherPlayer->m_hasHit = true;
 		}
 	}
 }

@@ -123,6 +123,11 @@ void SceneMain::Update()
 	int currentTime = GetNowCount();
 	float deltaTime = (currentTime - m_timer) / 1000.0f;
 	m_timer = currentTime;
+	if (CheckHitKey(KEY_INPUT_R))
+	{
+		End();   // 現在のリソースを解放
+		Init();  // 再初期化
+	}
 	// ゲームのリスタート
 	if (m_gameOver)
 	{
@@ -139,11 +144,6 @@ void SceneMain::Update()
 		}
 		StopSoundMem(m_bgmHandle);
 		// Rキーが押されたらリスタート
-		if (CheckHitKey(KEY_INPUT_R))
-		{
-			End();   // 現在のリソースを解放
-			Init();  // 再初期化
-		}
 		return;
 	}
 	m_roundTimer->Update(deltaTime);
