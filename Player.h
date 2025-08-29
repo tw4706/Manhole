@@ -18,6 +18,7 @@ enum class PlayerState
 
 enum class AttackType
 {
+	None,		// UŒ‚‚µ‚Ä‚¢‚È‚¢
 	Normal,		// ‹­UŒ‚
 	Weak,		// ãUŒ‚
 };
