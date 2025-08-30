@@ -37,14 +37,23 @@ private:
 	// マンホールのグラフィックハンドル
 	int m_manhole1GraphHandle;
 	int m_manhole2GraphHandle;
-	// 前回の時間を保存する変数
+	// 勝利したプレイヤーのハンドル
+	int m_winPlayer1GraphHandle;
+	int m_winPlayer2GraphHandle;
+	// ゲーム画面の時間をカウントする変数
 	int m_timer;
+	// ゲームスタートの時間をカウントする変数
+	int m_startTimer;
+	// ゲームスタートのシーケンス
+	bool m_isStartSeq;
+	// ゲーム開始合図のサウンド
+	int m_gameStartHandle;
 	// ゲームオーバーのフラグ
 	bool m_gameOver;
 	// 勝利したプレイヤーのフラグ
 	bool m_player1WinFlag;
 	bool m_player2WinFlag;
-	// BGMのグラフィックハンドル
+	// BGMのハンドル
 	int m_bgmHandle;
 	// 勝利時のBGMハンドル
 	int m_winBgmHandle;

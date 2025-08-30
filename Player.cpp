@@ -37,6 +37,8 @@ namespace
 	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
 	constexpr int kGround = 400;
+	// ゲームオーバーした時の消すy座標
+	constexpr int kGameOverY = 600;
 	// 落下速度の最大値
 	constexpr float kMaxFallSpeed = 15.0f;
 	// 攻撃判定のフレーム
@@ -130,7 +132,7 @@ void Player::End()
 	DeleteSoundMem(m_attackBgHandle);
 }
 
-void Player::Update()
+void Player::Update(float _deltaTime)
 {
 	// 重力
 	Gravity();
@@ -200,10 +202,36 @@ void Player::Update()
 	{
 		KnockBack();
 	}
+
+	// 落下中の処理
+	if (m_state == PlayerState::Fall)
+	{
+		if (m_isFalling)
+		{
+			m_fallSpeed += kGravity*_deltaTime;
+			if (m_fallSpeed > kMaxFallSpeed)
+			{
+				m_fallSpeed = kMaxFallSpeed;
+			}
+			m_pos.y += m_fallSpeed*_deltaTime;
+
+			if (m_pos.y > kGameOverY)
+			{
+				m_gameOver = true;
+			}
+		}
+		return; // 他の処理はスキップ
+	}
 }
 
 void Player::Draw()
 {
+	// ゲームオーバー時に一定の座標まで行くと描画しない
+	if (m_state == PlayerState::Fall && m_pos.y > kGameOverY)
+	{
+		return;
+	}
+
 	// アニメーションのフレーム数から表示したいコマ番号を計算で求める
 	int animNum = 0;
 	//// プレイヤーのそれぞれの状態をもとにX座標を計算する
@@ -257,7 +285,7 @@ void Player::Draw()
 	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kFallAnimNum;
 		handle = m_fallHandle;
-		srcY = kGraphHeight; // 落下アニメーションは2行目にあると仮定
+		srcY = kGraphHeight;
 		break;
 	}
 	}
@@ -427,37 +455,14 @@ void Player::UpdateState(int _input)
 		{
 			m_hurtCount = 0;
 			m_receivedAttackType = AttackType::None;
-			m_otherPlayer->m_state = PlayerState::Idle;
 
 			m_isAttack = false;
 			m_hasHit = false;
+			m_state = IsMoving(_input) ? PlayerState::Run : PlayerState::Idle;
 		}
 		break;
 	case PlayerState::Fall:
-		if (m_isFalling && m_state != PlayerState::Fall)
-		{
-			m_state = PlayerState::Fall;
-			m_animFrame = 0; // アニメーションフレームをリセット
-			printfDx("state==%d\n", m_state);
-		}
-
-		if (m_isFalling)
-		{
-			//printfDx("Fall");
-			m_fallSpeed += kGravity; // 落下速度を増加させる
-			if (m_fallSpeed > kMaxFallSpeed)
-			{
-				m_fallSpeed = kMaxFallSpeed;
-			}
-			m_pos.y += m_fallSpeed;  // プレイヤーの位置を更新する
-			// 画面外に落ちたらゲームオーバー
-			if (m_pos.y > 500)
-			{
-				m_gameOver = true;
-				//printfDx("ゲームオーバー\n");
-			}
-		}
-		return;
+		break;
 	}
 	m_oldInput = _input; // 前回の入力状態を更新
 }
@@ -520,21 +525,16 @@ void Player::CheckManholeCollision(Manhole* manhole)
 {
 	if (m_state == PlayerState::Fall || m_gameOver)return;
 
-	if (manhole->CheckLeftCollision(m_colRect))
+	bool hitLeft = manhole->CheckLeftCollision(m_colRect);
+	bool hitRight = manhole->CheckRightCollision(m_colRect);
+
+	if (hitLeft || hitRight)
 	{
 		m_state = PlayerState::Fall;
 		m_animFrame = 0;
 		m_isFalling = true;
 		m_fallSpeed = 0.0f;
-		//printfDx("左のマンホールに落ちた\n");
-	}
-	else if (manhole->CheckRightCollision(m_colRect))
-	{
-		m_state = PlayerState::Fall;
-		m_animFrame = 0;
-		m_fallSpeed = 0.0f;
-		m_isFalling = true;
-		//printfDx("右のマンホールに落ちた\n");
+		//printfDx(hitLeft ? "左のマンホールに落ちた\n" : "右のマンホールに落ちた\n");
 	}
 }
 
@@ -581,7 +581,7 @@ void Player::KnockBack()
 			m_otherPlayer->m_pos.x += m_isTurn ? -knockBackValue : knockBackValue;
 			m_otherPlayer->m_state = PlayerState::Hurt;
 			m_otherPlayer->m_hurtCount = 0;
-			m_otherPlayer->m_attackType = m_attackType;
+			m_otherPlayer->m_receivedAttackType = m_attackType;
 			m_otherPlayer->m_animFrame = 0;
 			m_hasHit = true;
 		}

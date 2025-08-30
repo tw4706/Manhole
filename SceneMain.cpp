@@ -21,7 +21,12 @@ SceneMain::SceneMain():
 	m_player2FallGraphHandle(-1),
 	m_manhole1GraphHandle(-1),
 	m_manhole2GraphHandle(-1),
+	m_winPlayer1GraphHandle(-1),
+	m_winPlayer2GraphHandle(-1),
 	m_timer(0),
+	m_startTimer(0),
+	m_isStartSeq(false),
+	m_gameStartHandle(-1),
 	m_gameOver(false),
 	m_player1WinFlag(false),
 	m_player2WinFlag(false),
@@ -52,7 +57,9 @@ void SceneMain::Init()
 	m_Bg = new Bg();
 	m_manhole = new Manhole();
 	m_roundTimer = new Timer();
-
+	// ゲームスタートのカウントダウン用タイマーを初期化
+	m_startTimer = 0;
+	m_isStartSeq = true;
 	// プレイヤーのゲームオーバーフラグを初期化
 	m_gameOver = false;
 	// プレイヤーの勝利フラグを初期化
@@ -73,6 +80,10 @@ void SceneMain::Init()
 	m_player2FallGraphHandle = LoadGraph("data/Fall1.png");
 	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
+	m_winPlayer1GraphHandle = LoadGraph("data/Win1.png");
+	m_winPlayer2GraphHandle = LoadGraph("data/Win2.png");
+	//BGMの読み込みと再生
+	m_gameStartHandle = LoadSoundMem("data/ReadyFight.mp3");
 	m_bgmHandle = LoadSoundMem("data/game.mp3");
 	ChangeVolumeSoundMem(110, m_bgmHandle);          // 音量の調整
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
@@ -112,7 +123,10 @@ void SceneMain::End()
 	DeleteGraph(m_player2HurtGraphHandle);
 	DeleteGraph(m_manhole1GraphHandle);
 	DeleteGraph(m_manhole2GraphHandle);
+	DeleteGraph(m_winPlayer1GraphHandle);
+	DeleteGraph(m_winPlayer2GraphHandle);
 	delete m_roundTimer;
+	DeleteSoundMem(m_gameStartHandle);
 	DeleteSoundMem(m_bgmHandle);
 	StopSoundMem(m_gameOverBgHandle);
 	DeleteSoundMem(m_gameOverBgHandle);
@@ -120,6 +134,22 @@ void SceneMain::End()
 
 void SceneMain::Update()
 {
+	if (m_isStartSeq)
+	{
+		m_startTimer++;
+		if (m_startTimer == 1)
+		{
+			PlaySoundMem(m_gameStartHandle, DX_PLAYTYPE_BACK);
+			ChangeVolumeSoundMem(150, m_gameStartHandle);
+		}
+
+		// 3秒後に開始
+		if (m_startTimer > 180)
+		{
+			m_isStartSeq = false;
+		}
+		return; // カウントダウン中はプレイヤーは動けない
+	}
 	int currentTime = GetNowCount();
 	float deltaTime = (currentTime - m_timer) / 1000.0f;
 	m_timer = currentTime;
@@ -134,13 +164,13 @@ void SceneMain::Update()
 		// 勝者は動くことが可能
 		if (m_player2WinFlag)
 		{
-			m_player1->Update();
-			m_player2->Update();
+			m_player1->Update(deltaTime);
+			m_player2->Update(deltaTime);
 		}
 		else if (m_player1WinFlag)
 		{
-			m_player1->Update();
-			m_player2->Update();
+			m_player1->Update(deltaTime);
+			m_player2->Update(deltaTime);
 		}
 		StopSoundMem(m_bgmHandle);
 		// Rキーが押されたらリスタート
@@ -154,8 +184,8 @@ void SceneMain::Update()
 	}
 	m_player1->SetOtherPlayer(m_player2);
 	m_player2->SetOtherPlayer(m_player1);
-	m_player2->Update();
-	m_player1->Update();
+	m_player2->Update(deltaTime);
+	m_player1->Update(deltaTime);
 	m_Bg->Update();
 	m_manhole->Update();
 	// プレイヤー1が左マンホールに触れたら2の勝利
@@ -192,17 +222,29 @@ void SceneMain::Draw()
 	m_player2->Draw();
 	m_roundTimer->Draw(640, 600);
 	m_manhole->Draw();
+	// ゲームタートのカウントダウン
+	if (m_isStartSeq)
+	{
+		if (m_startTimer < 120)
+		{
+			DrawString(640, 360, "READY", GetColor(255, 255, 0));
+		}
+		else
+		{
+			DrawString(640, 360, "FIGHT!!", GetColor(255, 0, 0));
+		}
+	}
 	// 点滅用の処理
 	int now = GetNowCount();
 	// 500ミリ秒ごとに点滅する
 	bool blink = ((now / 500) % 2) == 0;
 	if (m_player1WinFlag&&blink)
 	{
-		DrawFormatString(350, 100, GetColor(255, 0, 0), "プレイヤー1の勝利！");
+		DrawExtendGraph(500, 200, 800, 400, m_winPlayer1GraphHandle, true);
 	}
 	else if (m_player2WinFlag && blink)
 	{
-		DrawFormatString(350, 100, GetColor(255, 0, 0), "プレイヤー2の勝利！");
+		DrawExtendGraph(500, 200, 800, 400, m_winPlayer2GraphHandle, true);
 	}
 	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));
 }

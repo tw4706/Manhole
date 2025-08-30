@@ -20,7 +20,8 @@ Title::Title() :
     m_titleGraphHandle(-1),
 	m_titleLogoHandle(-1),
     m_titleStrHandle(-1),
-    m_bgmHandle(-1)
+    m_bgmHandle(-1),
+	m_pushHandle(-1)
 {
 }
 

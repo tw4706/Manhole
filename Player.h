@@ -42,7 +42,7 @@ public:
 
 	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,int _fallHandle,bool _isTurn);
 	void End();
-	void Update();
+	void Update(float _deltaTime);
 	void Draw();
 	void Gravity();	// èdóÕ
 
