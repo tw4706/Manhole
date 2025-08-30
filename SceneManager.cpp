@@ -47,6 +47,8 @@ void SceneManager::End()
 
 void SceneManager::Update()
 {
+	int pad = GetJoypadInputState(DX_INPUT_PAD1);
+	int pad2 = GetJoypadInputState(DX_INPUT_PAD2);
 	switch (m_fadeState)
 	{
 	case FADE_NONE:
@@ -55,7 +57,8 @@ void SceneManager::Update()
 		case SCENE_TITLE:
 			m_title->Update();
 			// EnterƒL[‚ğ‰Ÿ‚µ‚½‚çƒQ[ƒ€‰æ–Ê‚É”ò‚Ô
-			if (CheckHitKey(KEY_INPUT_RETURN))
+
+			if (CheckHitKey(KEY_INPUT_RETURN) || (pad & PAD_INPUT_A) || (pad2 & PAD_INPUT_A))
 			{
 				PlaySoundMem(m_pushHandle, DX_PLAYTYPE_BACK);
 				ChangeVolumeSoundMem(200, m_pushHandle);
