@@ -13,7 +13,8 @@ SceneManager::SceneManager():
 	m_main(nullptr),
 	m_fadeState(FADE_NONE),
 	m_fadeAlpha(0),
-	m_hasFadeIn(false)
+	m_hasFadeIn(false),
+	m_pushHandle(-1)
 {
 }
 
@@ -35,6 +36,13 @@ void SceneManager::Init()
 {
  	m_title = new Title();
 	m_title->Init();
+	m_pushHandle = LoadSoundMem("data/push.mp3");
+}
+
+void SceneManager::End()
+{
+	StopSoundMem(m_pushHandle);
+	DeleteSoundMem(m_pushHandle);
 }
 
 void SceneManager::Update()
@@ -49,6 +57,8 @@ void SceneManager::Update()
 			// EnterƒL[‚ğ‰Ÿ‚µ‚½‚çƒQ[ƒ€‰æ–Ê‚É”ò‚Ô
 			if (CheckHitKey(KEY_INPUT_RETURN))
 			{
+				PlaySoundMem(m_pushHandle, DX_PLAYTYPE_BACK);
+				ChangeVolumeSoundMem(200, m_pushHandle);
 				m_fadeState = FADE_OUT;
 				m_fadeAlpha = 0;
 				m_nextScene = SCENE_MAIN;

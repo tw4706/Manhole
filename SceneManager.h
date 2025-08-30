@@ -43,5 +43,7 @@ private:
 	int m_fadeAlpha;
 	// フェードインが終了しているかどうか
 	bool m_hasFadeIn = false;
+	// 決定音のサウンド
+	int m_pushHandle;
 };
 

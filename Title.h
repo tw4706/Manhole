@@ -17,6 +17,8 @@ private:
 	int m_titleStrHandle;
 	// BGMのグラフィックハンドル
 	int m_bgmHandle;
+	// 決定ボタンのサウンド
+	int m_pushHandle;
 
 };
 
