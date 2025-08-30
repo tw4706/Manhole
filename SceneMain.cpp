@@ -26,7 +26,9 @@ SceneMain::SceneMain():
 	m_timer(0),
 	m_startTimer(0),
 	m_isStartSeq(false),
-	m_gameStartHandle(-1),
+	m_gameStartSoundHandle(-1),
+	m_gameStartUI1Handle(-1),
+	m_gameStartUI2Handle(-1),
 	m_gameOver(false),
 	m_player1WinFlag(false),
 	m_player2WinFlag(false),
@@ -82,15 +84,17 @@ void SceneMain::Init()
 	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
 	m_winPlayer1GraphHandle = LoadGraph("data/Win1.png");
 	m_winPlayer2GraphHandle = LoadGraph("data/Win2.png");
+	m_gameStartUI1Handle = LoadGraph("data/UI1.png");
+	m_gameStartUI2Handle = LoadGraph("data/UI2.png");
 	//BGMの読み込みと再生
-	m_gameStartHandle = LoadSoundMem("data/ReadyFight.mp3");
+	m_gameStartSoundHandle = LoadSoundMem("data/ReadyFight.mp3");
 	m_bgmHandle = LoadSoundMem("data/game.mp3");
 	ChangeVolumeSoundMem(110, m_bgmHandle);          // 音量の調整
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
 	m_gameOverBgHandle = LoadSoundMem("data/gameOver.mp3");
 	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
 
-	m_roundTimer->Init(300.0f);
+	m_roundTimer->Init(30.0f);
 	m_roundTimer->Reset();
 	m_roundTimer->Start();
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,
@@ -125,8 +129,10 @@ void SceneMain::End()
 	DeleteGraph(m_manhole2GraphHandle);
 	DeleteGraph(m_winPlayer1GraphHandle);
 	DeleteGraph(m_winPlayer2GraphHandle);
+	DeleteGraph(m_gameStartUI1Handle);
+	DeleteGraph(m_gameStartUI2Handle);
 	delete m_roundTimer;
-	DeleteSoundMem(m_gameStartHandle);
+	DeleteSoundMem(m_gameStartSoundHandle);
 	DeleteSoundMem(m_bgmHandle);
 	StopSoundMem(m_gameOverBgHandle);
 	DeleteSoundMem(m_gameOverBgHandle);
@@ -139,8 +145,8 @@ void SceneMain::Update()
 		m_startTimer++;
 		if (m_startTimer == 1)
 		{
-			PlaySoundMem(m_gameStartHandle, DX_PLAYTYPE_BACK);
-			ChangeVolumeSoundMem(150, m_gameStartHandle);
+			PlaySoundMem(m_gameStartSoundHandle, DX_PLAYTYPE_BACK);
+			ChangeVolumeSoundMem(150, m_gameStartSoundHandle);
 		}
 
 		// 3秒後に開始
@@ -180,7 +186,38 @@ void SceneMain::Update()
 	if (m_roundTimer->IsTimeUp())
 	{
 		printfDx("時間切れ!");
-		// ゲームオーバーにする
+		if (m_roundTimer->IsTimeUp() && !m_gameOver)
+		{
+			Vec2 manholeCenter = m_manhole->GetCenter();
+			Vec2 p1Center = m_player1->GetCollisionRect().GetCenter();
+			Vec2 p2Center = m_player2->GetCollisionRect().GetCenter();
+
+			float dist1 = fabs(p1Center.x - manholeCenter.x);
+			float dist2 = fabs(p2Center.x - manholeCenter.x);
+
+			if (dist1 < dist2)
+			{
+				m_player1->SetGameOver(true);
+				m_player2->SetGameOver(false);
+				m_player2WinFlag = true;
+			}
+			else if (dist2 < dist1)
+			{
+				m_player2->SetGameOver(true);
+				m_player1->SetGameOver(false);
+				m_player1WinFlag = true;
+			}
+			else
+			{
+				m_player1->SetGameOver(true);
+				m_player2->SetGameOver(true);
+			}
+
+			m_gameOver = true;
+			m_roundTimer->Stop();
+			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
+		}
+
 	}
 	m_player1->SetOtherPlayer(m_player2);
 	m_player2->SetOtherPlayer(m_player1);
@@ -227,11 +264,12 @@ void SceneMain::Draw()
 	{
 		if (m_startTimer < 120)
 		{
-			DrawString(640, 360, "READY", GetColor(255, 255, 0));
+			DrawExtendGraph(500, 200, 800, 400, m_gameStartUI1Handle, true);
 		}
 		else
 		{
-			DrawString(640, 360, "FIGHT!!", GetColor(255, 0, 0));
+			DrawExtendGraph(500, 200, 800, 400, m_gameStartUI2Handle, true);
+
 		}
 	}
 	// 点滅用の処理

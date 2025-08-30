@@ -13,9 +13,11 @@ public:
 	void Draw();
 
 	// プレイヤーがマンホールに当たっているかどうか
-	bool CheckCollision(const Rect& playerRect);
 	bool CheckLeftCollision(const Rect& playerRect);
 	bool CheckRightCollision(const Rect& playerRect);
+	// マンホールの位置を取得
+	Vec2 GetCenter()const;
+
 
 private:
 	// マンホールのハンドル
