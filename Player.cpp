@@ -509,12 +509,6 @@ void Player::UpdateAnim()
 	}
 }
 
-// ƒvƒŒƒCƒ„[‚Ì“–‚½‚è”»’è‚ğæ“¾‚·‚éŠÖ”
-const Rect& Player::GetCollisionRect() const
-{
-	return m_colRect;
-}
-
 // Hurtó‘Ô‚ğ•Ô‚·ŠÖ”
 bool Player::IsHurt() const
 {

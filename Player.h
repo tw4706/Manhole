@@ -50,8 +50,12 @@ public:
 	bool IsMoving(int _input);										// プレイヤーの移動
 	void UpdateAnim();												// プレイヤーのアニメーション管理
 	void SetOtherPlayer(Player* other) { m_otherPlayer = other; }	// 攻撃対象の取得
-	void KnockBack();												// ノックバック処理
-	const Rect& GetCollisionRect() const;							// 当たり判定を取得するためのgetter関数
+	void KnockBack();
+	// ノックバック処理
+	// 当たり判定を取得するためのgetter関数
+	const Rect& GetCollisionRect()const { return m_colRect; }
+	// 座標のgetter関数
+	const Vec2& GetPos() const { return m_pos; }
 	bool IsHurt()const;
 	void SetGameOver(bool isOver) { m_gameOver = isOver; }			// ゲームオーバーの判定
 	void CheckManholeCollision(Manhole* pManhole);					// マンホールとの当たり判定

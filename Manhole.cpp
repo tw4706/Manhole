@@ -23,8 +23,8 @@ void Manhole::Init(int _handle1,int _handle2)
 {
 	m_handle1 = _handle1;
 	m_handle2 = _handle2;
-	m_leftRect.init(120, 460, kManholeGraphWidth+25, kManholeGraphHeight);
-	m_rightRect.init(1120, 460, kManholeGraphWidth+25, kManholeGraphHeight);
+	m_leftRect.init(120, 460, kManholeGraphWidth+20, kManholeGraphHeight);
+	m_rightRect.init(1120, 460, kManholeGraphWidth+20, kManholeGraphHeight);
 }
 
 void Manhole::End()
@@ -40,17 +40,17 @@ void Manhole::Update()
 void Manhole::Draw()
 {
 		DrawExtendGraph(
-			static_cast<int>(m_leftRect.m_left),
+			static_cast<int>(m_leftRect.m_left)-20,
 			static_cast<int>(m_leftRect.m_top),
-			static_cast<int>(m_leftRect.m_right),
+			static_cast<int>(m_leftRect.m_right)+20,
 			static_cast<int>(m_leftRect.m_bottom),
 			m_handle1, TRUE);
 		//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
 
 		DrawExtendGraph(
-			static_cast<int>(m_rightRect.m_left),
+			static_cast<int>(m_rightRect.m_left)-20,
 			static_cast<int>(m_rightRect.m_top),
-			static_cast<int>(m_rightRect.m_right),
+			static_cast<int>(m_rightRect.m_right)+20,
 			static_cast<int>(m_rightRect.m_bottom),
 			m_handle2, TRUE);
 
@@ -91,4 +91,12 @@ bool Manhole::CheckRightCollision(const Rect& playerRect)
 	}
 
 	return false;
+}
+
+Vec2 Manhole::GetCenter()const
+{
+	// éûä‘êÿÇÍÇÃç€ÇÃãóó£îªíËÇ…égóp
+	Vec2 leftCenter = m_leftRect.GetCenter();
+	Vec2 rightCenter = m_rightRect.GetCenter();
+	return Vec2{ (leftCenter.x + rightCenter.x) / 2.0f, (leftCenter.y + rightCenter.y) / 2.0f };
 }

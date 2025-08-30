@@ -47,7 +47,10 @@ private:
 	// ゲームスタートのシーケンス
 	bool m_isStartSeq;
 	// ゲーム開始合図のサウンド
-	int m_gameStartHandle;
+	int m_gameStartSoundHandle;
+	// ゲーム開始のUIハンドル
+	int m_gameStartUI1Handle;
+	int m_gameStartUI2Handle;
 	// ゲームオーバーのフラグ
 	bool m_gameOver;
 	// 勝利したプレイヤーのフラグ
