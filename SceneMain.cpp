@@ -140,13 +140,28 @@ void SceneMain::End()
 
 void SceneMain::Update()
 {
+	// ワンボタン勝利
+	if (CheckHitKey(KEY_INPUT_V))
+	{
+		m_gameOver = true;
+		m_player1->SetGameOver(true);
+		m_player2->SetGameOver(false);
+		m_player1WinFlag = true;
+	}
+	else if(CheckHitKey(KEY_INPUT_B))
+	{ 
+		m_gameOver = true;
+		m_player1->SetGameOver(false);
+		m_player2->SetGameOver(true);
+		m_player2WinFlag = true;
+	}
 	if (m_isStartSeq)
 	{
 		m_startTimer++;
 		if (m_startTimer == 1)
 		{
 			PlaySoundMem(m_gameStartSoundHandle, DX_PLAYTYPE_BACK);
-			ChangeVolumeSoundMem(150, m_gameStartSoundHandle);
+			ChangeVolumeSoundMem(200, m_gameStartSoundHandle);
 		}
 
 		// 3秒後に開始
@@ -195,17 +210,17 @@ void SceneMain::Update()
 			float dist1 = fabs(p1Center.x - manholeCenter.x);
 			float dist2 = fabs(p2Center.x - manholeCenter.x);
 
-			if (dist1 < dist2)
+			if (dist1 > dist2)
 			{
 				m_player1->SetGameOver(true);
 				m_player2->SetGameOver(false);
-				m_player2WinFlag = true;
+				m_player1WinFlag = true;
 			}
-			else if (dist2 < dist1)
+			else if (dist2 > dist1)
 			{
 				m_player2->SetGameOver(true);
 				m_player1->SetGameOver(false);
-				m_player1WinFlag = true;
+				m_player2WinFlag = true;
 			}
 			else
 			{

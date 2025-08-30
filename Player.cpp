@@ -448,7 +448,7 @@ void Player::UpdateState(int _input)
 		break;
 	case PlayerState::Hurt:
 		m_hurtCount++;
-		printfDx("HurtCount:%d\n", m_hurtCount);
+		//printfDx("HurtCount:%d\n", m_hurtCount);
 		// UŒ‚‚ðŽó‚¯‚½Œã‚Ì–³“GŽžŠÔ‚ðŒo‰ß‚µ‚½‚ç’Êíó‘Ô‚É–ß‚·
 		if ((m_receivedAttackType == AttackType::Weak && m_hurtCount > kWeakHurtDuration) ||
 			(m_receivedAttackType == AttackType::Normal && m_hurtCount > kHurtDuration))
