@@ -1,7 +1,7 @@
 #include "DxLib.h"
 #include"Game.h"
-
 #include"SceneMain.h"
+#include"SceneManager.h"
 
 namespace
 {
@@ -14,7 +14,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// ウインドウモード設定
 	ChangeWindowMode(true);
 	// ウインドウのタイトル変更
-	SetMainWindowText("ゲーム名");
+	SetMainWindowText("ManholeFight");
 	// 画面のサイズ変更
 	SetGraphMode(Game::kScreenWidth, Game::kScreenHeight, Game::kColorBitNum);
 
@@ -26,8 +26,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 	// 描画対象をバックバッファに変更
 	SetDrawScreen(DX_SCREEN_BACK);
 
-	SceneMain scene;
-	scene.Init();
+	int temp = LoadGraph("data/Player1.idle.png");
+	SceneManager SceneManager;
+	SceneManager.Init();
 
 	while (ProcessMessage() != -1)
 	{
@@ -38,10 +39,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 		ClearDrawScreen();
 
 		// ここにゲームの処理を書く
-		scene.Update();
-
-		// キャラクターの描画
-		scene.Draw();
+		SceneManager.Update();
+		SceneManager.Draw();
 
 		// escキーを押したらゲームを強制終了
 		if (CheckHitKey(KEY_INPUT_ESCAPE))
@@ -58,9 +57,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 		}
 	}
-	
-	// メモリから解放
-	scene.End();
 
 	DxLib_End();				// ＤＸライブラリ使用の終了処理
 
