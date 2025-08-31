@@ -16,7 +16,7 @@ namespace
 	constexpr int kAttackAnimNum = 8;
 	constexpr int kWeakAttackAnimNum = 6;
 	constexpr int kHurtAnimNum = 2;	
-	constexpr int kFallAnimNum = 4;
+	constexpr int kFallAnimNum = 2;
 	// 攻撃クールタイム
 	constexpr int kAttackCoolTime = 50;
 	constexpr int kWeakAttackCoolTime = 30;
@@ -41,6 +41,8 @@ namespace
 	constexpr int kGameOverY = 600;
 	// 落下速度の最大値
 	constexpr float kMaxFallSpeed = 15.0f;
+	// 落下開始のY座標
+	constexpr int kFallStartY = 450;
 	// 攻撃判定のフレーム
 	constexpr int kAttackActiveStartFrame = 3;
 	constexpr int kAttackActiveEndFrame = 5;
@@ -204,8 +206,11 @@ void Player::Update(float _deltaTime)
 	}
 
 	// 落下中の処理
-	if (m_state == PlayerState::Fall)
+	if (!m_isFalling && m_pos.y > kFallStartY)
 	{
+		m_state = PlayerState::Fall;
+		m_isFalling = true;
+		m_fallSpeed = 0.0f;
 		if (m_isFalling)
 		{
 			m_fallSpeed += kGravity*_deltaTime;
@@ -227,11 +232,6 @@ void Player::Update(float _deltaTime)
 void Player::Draw()
 {
 	// ゲームオーバー時に一定の座標まで行くと描画しない
-	if (m_state == PlayerState::Fall && m_pos.y > kGameOverY)
-	{
-		return;
-	}
-
 	// アニメーションのフレーム数から表示したいコマ番号を計算で求める
 	int animNum = 0;
 	//// プレイヤーのそれぞれの状態をもとにX座標を計算する
@@ -285,7 +285,7 @@ void Player::Draw()
 	{
 		animNum = (m_animFrame / kAnimWaitFrame) % kFallAnimNum;
 		handle = m_fallHandle;
-		srcY = kGraphHeight;
+		srcY = 0;
 		break;
 	}
 	}
