@@ -70,7 +70,6 @@ void Title::Draw()
 	DrawExtendGraph(drawX, drawY, drawX + kDrawWidth, 
         drawY + kDrawHeight,m_titleLogoHandle, true);
     // タイトル文字の描画とフェード
-	// sinを使うことによって滑らかに点滅するようにする
     int alpha = 128 + 
         static_cast<int>(127 * sin(GetNowCount() / 100.0));
     SetDrawBlendMode(DX_BLENDMODE_ALPHA, alpha);    // アルファの値を周期的に変化させて、点滅風に見せる
