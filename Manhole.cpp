@@ -40,22 +40,21 @@ void Manhole::Update()
 void Manhole::Draw()
 {
 		DrawExtendGraph(
-			static_cast<int>(m_leftRect.m_left)-20,
+			static_cast<int>(m_leftRect.m_left)-15,
 			static_cast<int>(m_leftRect.m_top),
-			static_cast<int>(m_leftRect.m_right)+20,
+			static_cast<int>(m_leftRect.m_right)+15,
 			static_cast<int>(m_leftRect.m_bottom),
 			m_handle1, TRUE);
 		//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
 
 		DrawExtendGraph(
-			static_cast<int>(m_rightRect.m_left)-20,
+			static_cast<int>(m_rightRect.m_left)-15,
 			static_cast<int>(m_rightRect.m_top),
-			static_cast<int>(m_rightRect.m_right)+20,
+			static_cast<int>(m_rightRect.m_right)+15,
 			static_cast<int>(m_rightRect.m_bottom),
 			m_handle2, TRUE);
 
 		//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
-
 
 #ifdef _DEBUG
 	// ç∂É}ÉìÉzÅ[ÉãÇÃìñÇΩÇËîªíË
