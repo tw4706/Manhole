@@ -96,7 +96,7 @@ void SceneMain::Init()
 
 	m_roundTimer->Init(30.0f);
 	m_roundTimer->Reset();
-	m_roundTimer->Start();
+	m_roundTimer->Stop(); // タイマーを一時停止
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,
 		m_player1AttackGraphHandle, m_player1WeakAttackGraphHandle,
 		m_player1RunGraphHandle,m_player1HurtGraphHandle,m_player1FallGraphHandle,false);
@@ -168,6 +168,7 @@ void SceneMain::Update()
 		if (m_startTimer > 180)
 		{
 			m_isStartSeq = false;
+			m_roundTimer->Start(); // タイマーを再開
 		}
 		return; // カウントダウン中はプレイヤーは動けない
 	}
