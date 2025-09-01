@@ -37,12 +37,12 @@ namespace
 	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
 	constexpr int kGround = 400;
-	// ゲームオーバーした時の消すy座標
-	constexpr int kGameOverY = 600;
 	// 落下速度の最大値
 	constexpr float kMaxFallSpeed = 15.0f;
 	// 落下開始のY座標
 	constexpr int kFallStartY = 400;
+	// 一定の座標まで行くと描画をストップ
+	constexpr int kDrawStopY = 525;
 	// 攻撃判定のフレーム
 	constexpr int kAttackActiveStartFrame = 3;
 	constexpr int kAttackActiveEndFrame = 5;
@@ -220,11 +220,6 @@ void Player::Update(float _deltaTime)
 				m_fallSpeed = kMaxFallSpeed;
 			}
 			m_pos.y += m_fallSpeed*_deltaTime;
-
-			if (m_pos.y > kGameOverY)
-			{
-				m_gameOver = true;
-			}
 		}
 		return; // 他の処理はスキップ
 	}
@@ -232,6 +227,12 @@ void Player::Update(float _deltaTime)
 
 void Player::Draw()
 {
+	// ゲームオーバー時に描画を止める
+	if (m_state == PlayerState::Fall && m_pos.y > kDrawStopY)
+	{
+		return;
+	}
+
 	// アニメーションのフレーム数から表示したいコマ番号を計算で求める
 	int animNum = 0;
 	//// プレイヤーのそれぞれの状態をもとにX座標を計算する

@@ -94,7 +94,7 @@ void SceneMain::Init()
 	m_gameOverBgHandle = LoadSoundMem("data/gameOver.mp3");
 	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
 
-	m_roundTimer->Init(30.0f);
+	m_roundTimer->Init(35.0f);
 	m_roundTimer->Reset();
 	m_roundTimer->Stop(); // タイマーを一時停止
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,
