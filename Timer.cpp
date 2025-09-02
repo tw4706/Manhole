@@ -1,10 +1,16 @@
 #include "Timer.h"
 #include "DxLib.h"
 
+namespace
+{
+	constexpr float kScale = 1.3f; // タイマー画像の拡大率
+}
+
 Timer::Timer():
 	m_time(0.0f),
 	m_maxTime(0.0f),
-	m_isRunning(false)
+	m_isRunning(false),
+	m_timerHandle(-1)
 {
 }
 
@@ -14,9 +20,9 @@ Timer::~Timer()
 
 void Timer::Init(float _maxTime)
 {
+	m_timerHandle = LoadGraph("data/Timer.png");
 	m_maxTime = _maxTime;
 	Reset();
-	Start();
 }
 
 void Timer::End()
@@ -39,11 +45,15 @@ void Timer::Update(float _deltaTime)
 }
 void Timer::Draw(int _x, int _y) const
 {
+	SetFontSize(36);
+	ChangeFont("Msゴシック");
 	int color = GetColor(255, 255, 0);
 	// タイマーの残り時間を整数に変換
 	char buffer[32];
-	sprintf_s(buffer, "Time: %d", static_cast<int>(m_time));
-	DrawFormatString(_x, _y, color, buffer);
+	sprintf_s(buffer, "%d", static_cast<int>(m_time));
+	DrawFormatString(_x+20, _y+60, color, buffer);
+
+	DrawExtendGraph(_x-100, _y-40,_x*kScale,_y*kScale, m_timerHandle, true);
 }
 
 void Timer::Start()

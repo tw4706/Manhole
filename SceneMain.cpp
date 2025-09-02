@@ -94,7 +94,7 @@ void SceneMain::Init()
 	m_gameOverBgHandle = LoadSoundMem("data/gameOver.mp3");
 	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
 
-	m_roundTimer->Init(35.0f);
+	m_roundTimer->Init(30.0f);
 	m_roundTimer->Reset();
 	m_roundTimer->Stop(); // タイマーを一時停止
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,
@@ -140,21 +140,6 @@ void SceneMain::End()
 
 void SceneMain::Update()
 {
-	// ワンボタン勝利
-	if (CheckHitKey(KEY_INPUT_V))
-	{
-		m_gameOver = true;
-		m_player1->SetGameOver(true);
-		m_player2->SetGameOver(false);
-		m_player1WinFlag = true;
-	}
-	else if(CheckHitKey(KEY_INPUT_B))
-	{ 
-		m_gameOver = true;
-		m_player1->SetGameOver(false);
-		m_player2->SetGameOver(true);
-		m_player2WinFlag = true;
-	}
 	if (m_isStartSeq)
 	{
 		m_startTimer++;
@@ -169,9 +154,28 @@ void SceneMain::Update()
 		{
 			m_isStartSeq = false;
 			m_roundTimer->Start(); // タイマーを再開
+			m_timer = GetNowCount(); // タイマーの基準時間をリセット
 		}
 		return; // カウントダウン中はプレイヤーは動けない
 	}
+
+	// ワンボタン勝利
+	if (CheckHitKey(KEY_INPUT_V))
+	{
+		m_gameOver = true;
+		m_player1->SetGameOver(true);
+		m_player2->SetGameOver(false);
+		m_player2WinFlag = true;
+	}
+	else if(CheckHitKey(KEY_INPUT_B))
+	{ 
+		m_gameOver = true;
+		m_player1->SetGameOver(false);
+		m_player2->SetGameOver(true);
+		m_player1WinFlag = true;
+	}
+	
+
 	int currentTime = GetNowCount();
 	float deltaTime = (currentTime - m_timer) / 1000.0f;
 	m_timer = currentTime;
@@ -215,13 +219,13 @@ void SceneMain::Update()
 			{
 				m_player1->SetGameOver(true);
 				m_player2->SetGameOver(false);
-				m_player1WinFlag = true;
-			}
-			else if (dist2 > dist1)
-			{
-				m_player2->SetGameOver(true);
-				m_player1->SetGameOver(false);
 				m_player2WinFlag = true;
+			}
+			else if (dist1 < dist2)
+			{
+				m_player1->SetGameOver(false);
+				m_player2->SetGameOver(true);
+				m_player1WinFlag = true;
 			}
 			else
 			{
@@ -285,8 +289,8 @@ void SceneMain::Draw()
 		else
 		{
 			DrawExtendGraph(500, 200, 800, 400, m_gameStartUI2Handle, true);
-
 		}
+		return;
 	}
 	// 点滅用の処理
 	int now = GetNowCount();

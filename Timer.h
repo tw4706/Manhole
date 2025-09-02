@@ -28,5 +28,7 @@ private:
 	float m_maxTime;
 	// タイマーが動いているか
 	bool m_isRunning;
+	// タイマーのハンドル
+	int m_timerHandle;
 };
 
