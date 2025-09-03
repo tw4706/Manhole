@@ -51,9 +51,9 @@ void Timer::Draw(int _x, int _y) const
 	// タイマーの残り時間を整数に変換
 	char buffer[32];
 	sprintf_s(buffer, "%d", static_cast<int>(m_time));
-	DrawFormatString(_x+20, _y+60, color, buffer);
+	DrawFormatString(_x+10, _y+60, color, buffer);
 
-	DrawExtendGraph(_x-100, _y-40,_x*kScale,_y*kScale, m_timerHandle, true);
+	DrawExtendGraph(_x-140, _y-40,_x*kScale,_y*kScale, m_timerHandle, true);
 }
 
 void Timer::Start()
