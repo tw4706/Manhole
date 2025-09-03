@@ -304,5 +304,7 @@ void SceneMain::Draw()
 	{
 		DrawExtendGraph(500, 200, 800, 400, m_winPlayer2GraphHandle, true);
 	}
+#ifdef _DEBUG
 	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));
+#endif
 }
