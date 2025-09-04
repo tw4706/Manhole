@@ -33,9 +33,9 @@ private:
 	// 現在のシーンのタイプ
 	SceneType m_currentType;
 	// SceneTitleの変数
-	Title* m_title;
+	Title m_title;
 	// SceneMainの変数
-	SceneMain* m_main;
+	SceneMain m_main;
 	// 次のシーン遷移保存用変数
 	SceneType m_nextScene;
 	// フェード制御

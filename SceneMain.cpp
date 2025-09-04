@@ -179,7 +179,10 @@ void SceneMain::Update()
 	int currentTime = GetNowCount();
 	float deltaTime = (currentTime - m_timer) / 1000.0f;
 	m_timer = currentTime;
-	if (CheckHitKey(KEY_INPUT_R))
+	int pad1 = GetJoypadInputState(DX_INPUT_KEY_PAD1);
+	int pad2 = GetJoypadInputState(DX_INPUT_PAD2);
+	//printfDx("%d", pad);
+	if (CheckHitKey(KEY_INPUT_R)||(pad1&PAD_INPUT_8)|| (pad2 & PAD_INPUT_8))
 	{
 		End();   // Œ»İ‚ÌƒŠƒ\[ƒX‚ğ‰ğ•ú
 		Init();  // Ä‰Šú‰»
@@ -205,7 +208,7 @@ void SceneMain::Update()
 	m_roundTimer->Update(deltaTime);
 	if (m_roundTimer->IsTimeUp())
 	{
-		printfDx("ŠÔØ‚ê!");
+		/*printfDx("ŠÔØ‚ê!");*/
 		if (m_roundTimer->IsTimeUp() && !m_gameOver)
 		{
 			Vec2 manholeCenter = m_manhole->GetCenter();

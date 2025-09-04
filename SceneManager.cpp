@@ -9,8 +9,6 @@ namespace
 SceneManager::SceneManager():
 	m_currentType(SCENE_TITLE),
 	m_nextScene(SCENE_TITLE),
-	m_title(nullptr),
-	m_main(nullptr),
 	m_fadeState(FADE_NONE),
 	m_fadeAlpha(0),
 	m_hasFadeIn(false),
@@ -20,22 +18,13 @@ SceneManager::SceneManager():
 
 SceneManager::~SceneManager()
 {
-	if (m_title)
-	{
-		m_title->End();
-		delete m_title;
-	}
-	if (m_main)
-	{
-		m_main->End();
-		delete m_main;
-	}
+	//m_title.End();
+	//m_main.End();
 }
 
 void SceneManager::Init()
 {
- 	m_title = new Title();
-	m_title->Init();
+	m_title.Init();
 	m_pushHandle = LoadSoundMem("data/push.mp3");
 }
 
@@ -55,10 +44,10 @@ void SceneManager::Update()
 		switch (m_currentType)
 		{
 		case SCENE_TITLE:
-			m_title->Update();
+			m_title.Update();
 			// EnterƒL[‚ð‰Ÿ‚µ‚½‚çƒQ[ƒ€‰æ–Ê‚É”ò‚Ô
 
-			if (CheckHitKey(KEY_INPUT_RETURN) || (pad & PAD_INPUT_A) || (pad2 & PAD_INPUT_A))
+			if (CheckHitKey(KEY_INPUT_RETURN) || (pad & PAD_INPUT_1) || (pad2 & PAD_INPUT_1))
 			{
 				PlaySoundMem(m_pushHandle, DX_PLAYTYPE_BACK);
 				ChangeVolumeSoundMem(200, m_pushHandle);
@@ -69,7 +58,7 @@ void SceneManager::Update()
 			break;
 
 		case SCENE_MAIN:
-			m_main->Update();
+			m_main.Update();
 			break;
 		}
 		break;
@@ -107,10 +96,10 @@ void SceneManager::Draw()
 	switch (m_currentType)
 	{
 	case SCENE_TITLE:
-		m_title->Draw();
+		m_title.Draw();
 		break;
 	case SCENE_MAIN:
-		m_main->Draw();
+		m_main.Draw();
 		break;
 	}
 	if (m_fadeState != FADE_NONE)
@@ -128,28 +117,22 @@ void SceneManager::ChangeScene(SceneType nextScene)
 	switch (m_currentType)
 	{
 	case SCENE_TITLE:
-		m_title->End();
-		delete m_title;
-		m_title = nullptr;
+		m_title.End();
 		break;
 
 		case SCENE_MAIN:
-			m_main->End();
-			delete m_main;
-			m_main = nullptr;
+			m_main.End();
 			break;
 	}
 	m_currentType = nextScene;
 	switch (m_currentType)
 	{
 	case SCENE_TITLE:
-		m_title = new Title();
-		m_title->Init();
+		m_title.Init();
 		break;
 
 	case SCENE_MAIN:
-		m_main = new SceneMain();
-		m_main->Init();
+		m_main.Init();
 		break;
 	}
 

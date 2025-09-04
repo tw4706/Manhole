@@ -41,6 +41,9 @@ void Title::Init()
 
 void Title::End()
 {
+    DeleteGraph(m_titleGraphHandle);
+    DeleteGraph(m_titleLogoHandle);
+    DeleteGraph(m_titleStrHandle);
     StopSoundMem(m_bgmHandle);
     DeleteSoundMem(m_bgmHandle);
 }
