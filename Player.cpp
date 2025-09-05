@@ -18,10 +18,10 @@ namespace
 	constexpr int kHurtAnimNum = 2;	
 	constexpr int kFallAnimNum = 2;
 	// 攻撃クールタイム
-	constexpr int kAttackCoolTime = 50;
-	constexpr int kWeakAttackCoolTime = 30;
+	constexpr int kAttackCoolTime = 70;
+	constexpr int kWeakAttackCoolTime = 35;
 	//強攻撃の準備時間
-	constexpr int kAttackPrep = 10;
+	constexpr int kAttackPrep = 20;
 	// 攻撃を受けた後の無敵時間
 	constexpr int kHurtDuration = 40;
 	constexpr int kWeakHurtDuration = 20;
@@ -48,8 +48,8 @@ namespace
 	constexpr int kAttackActiveEndFrame = 5;
 	constexpr int kWeakAttackStartFrame = 2;
 	constexpr int kWeakAttackEndFrame = 3;
-
-
+	// 描画の拡大率
+	constexpr float kPlayerScale = 2.5f;
 }
 
 Player::Player() :
@@ -117,8 +117,8 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_gameOver = false;
 	m_currentFrame = 0;
 	m_hasHit = false;
-	m_weakBgHandle = LoadSoundMem("data/weak.mp3");
-	m_attackBgHandle = LoadSoundMem("data/attack.mp3");
+	m_weakBgHandle = LoadSoundMem("data/BGM・SE/weak.mp3");
+	m_attackBgHandle = LoadSoundMem("data/BGM・SE/attack.mp3");
 	m_state = PlayerState::Idle;
 	m_attackType = AttackType::None;
 	m_receivedAttackType = AttackType::None;
@@ -142,14 +142,14 @@ void Player::Update(float _deltaTime)
 	// 当たり判定
 	if (m_isTurn)
 	{
-		m_colRect.init(m_pos.x - kGraphWidth / 2 + 64.0f,
+		m_colRect.init(m_pos.x - kGraphWidth / 2 + 80.0f,
 		m_pos.y - kGraphHeight / 2 + 48.0f,
 		kGraphWidth, kGraphHeight);
 		
 	}
 	else
 	{
-		m_colRect.init(m_pos.x - kGraphWidth / 2 + 32.0f,
+		m_colRect.init(m_pos.x - kGraphWidth / 2 + 40.0f,
 		m_pos.y - kGraphHeight / 2 + 48.0f,
 		kGraphWidth, kGraphHeight);
 	}
@@ -297,27 +297,33 @@ void Player::Draw()
 	// プレイヤーの描画処理
 	if (handle != -1)
 	{
-		if (m_isTurn) 
-		{ 
-			// 左向き
-			DrawRectExtendGraph(
-				static_cast<int>(m_pos.x) + 96, static_cast<int>(m_pos.y),
-				static_cast<int>(m_pos.x), static_cast<int>(m_pos.y) + 96,
-				srcX, srcY,
-				48, 48,
-				handle, TRUE);
-		}
-		else 
-		{
-			// 右向き
-			DrawRectExtendGraph(
-				static_cast<int>(m_pos.x), static_cast<int>(m_pos.y),
-				static_cast<int>(m_pos.x) + kGraphWidth*kScale,
-				static_cast<int>(m_pos.y) + kGraphHeight*kScale,
-				srcX, srcY,
-				kGraphWidth, kGraphHeight,
-				handle, TRUE);
-		}
+		int drawWidth = static_cast<int>(kGraphWidth * kPlayerScale);
+		int drawHeight = static_cast<int>(kGraphHeight * kPlayerScale);
+
+if (m_isTurn)
+{
+	// 左向き（反転描画）
+	DrawRectExtendGraph(
+		static_cast<int>(m_pos.x) + drawWidth-5,
+		static_cast<int>(m_pos.y)-30,
+		static_cast<int>(m_pos.x), 
+		static_cast<int>(m_pos.y) + drawHeight-30,
+		srcX, srcY,
+		kGraphWidth, kGraphHeight,
+		handle, TRUE);
+}
+else
+{
+	// 右向き
+	DrawRectExtendGraph(
+		static_cast<int>(m_pos.x), static_cast<int>(m_pos.y)-30,
+		static_cast<int>(m_pos.x) + drawWidth,
+		static_cast<int>(m_pos.y) + drawHeight-30,
+		srcX, srcY,
+		kGraphWidth, kGraphHeight,
+		handle, TRUE);
+}
+
 	}
 #ifdef _DEBUG
 	// 当たり判定の表示

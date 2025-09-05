@@ -5,6 +5,11 @@ namespace
 {
 	constexpr int kManholeGraphWidth = 48;
 	constexpr int kManholeGraphHeight = 48;
+	// マンホールの当たり判定用の座標
+	constexpr int kManholeX1 = 220; // 左マンホールのX座標
+	constexpr int kManholeY1 = 460; // 左マンホールのY座標
+	constexpr int kManholeX2 = 1060; // 右マンホールのX座標
+	constexpr int kManholeY2 = 460; // 右マンホールのY座標
 }
 
 Manhole::Manhole():
@@ -23,8 +28,8 @@ void Manhole::Init(int _handle1,int _handle2)
 {
 	m_handle1 = _handle1;
 	m_handle2 = _handle2;
-	m_leftRect.init(120, 460, kManholeGraphWidth+20, kManholeGraphHeight);
-	m_rightRect.init(1120, 460, kManholeGraphWidth+20, kManholeGraphHeight);
+	m_leftRect.init(kManholeX1, kManholeY1, kManholeGraphWidth+20, kManholeGraphHeight);
+	m_rightRect.init(kManholeX2, kManholeY2, kManholeGraphWidth+20, kManholeGraphHeight);
 }
 
 void Manhole::End()

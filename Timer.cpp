@@ -20,7 +20,7 @@ Timer::~Timer()
 
 void Timer::Init(float _maxTime)
 {
-	m_timerHandle = LoadGraph("data/Timer.png");
+	m_timerHandle = LoadGraph("data/UI/Timer.png");
 	m_maxTime = _maxTime;
 	Reset();
 }

@@ -68,30 +68,30 @@ void SceneMain::Init()
 	m_player1WinFlag = false;
 	m_player2WinFlag = false;
 	//グラフィックの読み込み
-	m_player1GraphHandle = LoadGraph("data/Player1.idle.png");
-	m_player2GraphHandle = LoadGraph("data/Player2.idle.png");
-	m_player1AttackGraphHandle = LoadGraph("data/Player1.weak.png");
-	m_player2AttackGraphHandle = LoadGraph("data/Player2.attack.png");
-	m_player1WeakAttackGraphHandle = LoadGraph("data/Player1.attack.png");
-	m_player2WeakAttackGraphHandle = LoadGraph("data/Player2.weak.png");
-	m_player1RunGraphHandle = LoadGraph("data/Player1.run.png");
-	m_player2RunGraphHandle = LoadGraph("data/Player2.run.png");
-	m_player1HurtGraphHandle = LoadGraph("data/Player1.hurt.png");
-	m_player2HurtGraphHandle = LoadGraph("data/Player2.hurt.png");
-	m_player1FallGraphHandle = LoadGraph("data/Fall.png");
-	m_player2FallGraphHandle = LoadGraph("data/Fall1.png");
-	m_manhole1GraphHandle = LoadGraph("data/Manhole1.png");
-	m_manhole2GraphHandle = LoadGraph("data/Manhole2.png");
-	m_winPlayer1GraphHandle = LoadGraph("data/Win1.png");
-	m_winPlayer2GraphHandle = LoadGraph("data/Win2.png");
-	m_gameStartUI1Handle = LoadGraph("data/UI1.png");
-	m_gameStartUI2Handle = LoadGraph("data/UI2.png");
+	m_player1GraphHandle = LoadGraph("data/Player/Player1.idle.png");
+	m_player2GraphHandle = LoadGraph("data/Player/Player2.idle.png");
+	m_player1AttackGraphHandle = LoadGraph("data/Player/Player1.weak.png");
+	m_player2AttackGraphHandle = LoadGraph("data/Player/Player2.attack.png");
+	m_player1WeakAttackGraphHandle = LoadGraph("data/Player/Player1.attack.png");
+	m_player2WeakAttackGraphHandle = LoadGraph("data/Player/Player2.weak.png");
+	m_player1RunGraphHandle = LoadGraph("data/Player/Player1.run.png");
+	m_player2RunGraphHandle = LoadGraph("data/Player/Player2.run.png");
+	m_player1HurtGraphHandle = LoadGraph("data/Player/Player1.hurt.png");
+	m_player2HurtGraphHandle = LoadGraph("data/Player/Player2.hurt.png");
+	m_player1FallGraphHandle = LoadGraph("data/Player/Fall.png");
+	m_player2FallGraphHandle = LoadGraph("data/Player/Fall1.png");
+	m_manhole1GraphHandle = LoadGraph("data/UI/Manhole1.png");
+	m_manhole2GraphHandle = LoadGraph("data/UI/Manhole2.png");
+	m_winPlayer1GraphHandle = LoadGraph("data/UI/Win1.png");
+	m_winPlayer2GraphHandle = LoadGraph("data/UI/Win2.png");
+	m_gameStartUI1Handle = LoadGraph("data/UI/UI1.png");
+	m_gameStartUI2Handle = LoadGraph("data/UI/UI2.png");
 	//BGMの読み込みと再生
-	m_gameStartSoundHandle = LoadSoundMem("data/ReadyFight.mp3");
-	m_bgmHandle = LoadSoundMem("data/game.mp3");
+	m_gameStartSoundHandle = LoadSoundMem("data/BGM・SE/ReadyFight.mp3");
+	m_bgmHandle = LoadSoundMem("data/BGM・SE/game.mp3");
 	ChangeVolumeSoundMem(110, m_bgmHandle);          // 音量の調整
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
-	m_gameOverBgHandle = LoadSoundMem("data/gameOver.mp3");
+	m_gameOverBgHandle = LoadSoundMem("data/BGM・SE/gameOver.mp3");
 	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
 
 	m_roundTimer->Init(30.0f);
@@ -182,7 +182,7 @@ void SceneMain::Update()
 	int pad1 = GetJoypadInputState(DX_INPUT_KEY_PAD1);
 	int pad2 = GetJoypadInputState(DX_INPUT_PAD2);
 	//printfDx("%d", pad);
-	if (CheckHitKey(KEY_INPUT_R)||(pad1&PAD_INPUT_8)|| (pad2 & PAD_INPUT_8))
+	if (CheckHitKey(KEY_INPUT_R)||(pad1&PAD_INPUT_X)|| (pad2 & PAD_INPUT_X))
 	{
 		End();   // 現在のリソースを解放
 		Init();  // 再初期化

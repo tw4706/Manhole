@@ -21,8 +21,8 @@ Bg::~Bg()
 
 void Bg::Init()
 {
-	m_mapHandle = LoadGraph("data/mapChip.png");
-	m_bgHandle = LoadGraph("data/title.png");
+	m_mapHandle = LoadGraph("data/BG/mapChip.png");
+	m_bgHandle = LoadGraph("data/UI/title.png");
 }
 
 void Bg::End()

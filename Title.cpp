@@ -31,10 +31,10 @@ Title::~Title()
 
 void Title::Init()
 {
-    m_titleGraphHandle = LoadGraph("data/title_1.png");
-	m_titleLogoHandle = LoadGraph("data/titleL.png");
-    m_titleStrHandle = LoadGraph("data/str.png");
-    m_bgmHandle = LoadSoundMem("data/title.mp3");
+    m_titleGraphHandle = LoadGraph("data/UI/title_1.png");
+	m_titleLogoHandle = LoadGraph("data/UI/titleL.png");
+    m_titleStrHandle = LoadGraph("data/UI/str.png");
+    m_bgmHandle = LoadSoundMem("data/BGMÅESE/title.mp3");
     PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);
     ChangeVolumeSoundMem(150, m_bgmHandle);
 }

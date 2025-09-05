@@ -25,7 +25,7 @@ SceneManager::~SceneManager()
 void SceneManager::Init()
 {
 	m_title.Init();
-	m_pushHandle = LoadSoundMem("data/push.mp3");
+	m_pushHandle = LoadSoundMem("data/BGM・SE/push.mp3");
 }
 
 void SceneManager::End()
@@ -59,6 +59,14 @@ void SceneManager::Update()
 
 		case SCENE_MAIN:
 			m_main.Update();
+			// ゲーム画面からタイトルに戻る処理
+			if (CheckHitKey(KEY_INPUT_E)|| (pad & PAD_INPUT_10) || (pad2 & PAD_INPUT_10))
+			{
+				m_fadeState = FADE_OUT;
+				m_fadeAlpha = 0;
+				m_nextScene = SCENE_TITLE;
+				m_title.Init();
+			}
 			break;
 		}
 		break;
@@ -67,7 +75,7 @@ void SceneManager::Update()
 		if (m_fadeAlpha >= 255)
 		{
 			m_fadeAlpha = 255;
-			ChangeScene(SCENE_MAIN);
+			ChangeScene(m_nextScene);
 			// 最初のフェードインだけ許可
 			if (!m_hasFadeIn)
 			{
@@ -93,6 +101,7 @@ void SceneManager::Update()
 
 void SceneManager::Draw()
 {
+	// シーンごとの描画処理
 	switch (m_currentType)
 	{
 	case SCENE_TITLE:
@@ -135,6 +144,4 @@ void SceneManager::ChangeScene(SceneType nextScene)
 		m_main.Init();
 		break;
 	}
-
-
 }
