@@ -17,6 +17,8 @@ namespace
 	constexpr int kWeakAttackAnimNum = 6;
 	constexpr int kHurtAnimNum = 2;	
 	constexpr int kFallAnimNum = 2;
+	constexpr int kWinAnimNum = 6;
+	constexpr int kTimeUpAnimNum = 6;
 	// 攻撃クールタイム
 	constexpr int kAttackCoolTime = 70;
 	constexpr int kWeakAttackCoolTime = 35;
@@ -59,6 +61,8 @@ Player::Player() :
 	m_runHandle(-1),
 	m_hurtHandle(-1),
 	m_fallHandle(-1),
+	m_winHandle(-1),
+	m_timeUpHandle(-1),
 	m_pos(0.0f, 0.0f),
 	m_centerPos(0.0f, 0.0f),
 	m_padType(0),
@@ -76,6 +80,8 @@ Player::Player() :
 	m_gameOver(false),
 	m_currentFrame(0),
 	m_hasHit(false),
+	m_deltaTime(0),
+	m_isFallEnd(false),
 	m_weakBgHandle(-1),
 	m_attackBgHandle(-1),
 	m_state(PlayerState::Idle),
@@ -90,7 +96,9 @@ Player::~Player()
 
 }
 
-void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,int _fallHandle,bool _isTurn)
+void Player::Init(int _padType, Vec2 _firstPos,int _handle,
+	int _attackHandle,int _wAttackHandle,int _runHandle,
+	int _hurtHandle,int _fallHandle,int _winHandle,int _timeUpHandle,bool _isTurn)
 {
 	// 初期化
 	m_handle = _handle;
@@ -99,6 +107,8 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_runHandle = _runHandle;
 	m_hurtHandle = _hurtHandle;
 	m_fallHandle = _fallHandle;
+	m_winHandle = _winHandle;
+	m_timeUpHandle = _timeUpHandle;
 	m_pos = _firstPos;
 	m_pos.y = kGround;
 	m_centerPos = Vec2(0.0f, 0.0f);
@@ -117,6 +127,8 @@ void Player::Init(int _padType, Vec2 _firstPos,int _handle,int _attackHandle,int
 	m_gameOver = false;
 	m_currentFrame = 0;
 	m_hasHit = false;
+	m_deltaTime = 0;
+	m_isFallEnd = false;
 	m_weakBgHandle = LoadSoundMem("data/BGM・SE/weak.mp3");
 	m_attackBgHandle = LoadSoundMem("data/BGM・SE/attack.mp3");
 	m_state = PlayerState::Idle;
@@ -204,25 +216,6 @@ void Player::Update(float _deltaTime)
 	{
 		KnockBack();
 	}
-
-	// 落下中の処理
-	if (!m_isFalling&&m_pos.y>kFallStartY)
-	{
-		m_state = PlayerState::Fall;
-		m_animFrame = 0;
-		m_isFalling = true;
-		m_fallSpeed = 0.0f;
-		if (m_isFalling)
-		{
-			m_fallSpeed += kGravity*_deltaTime;
-			if (m_fallSpeed > kMaxFallSpeed)
-			{
-				m_fallSpeed = kMaxFallSpeed;
-			}
-			m_pos.y += m_fallSpeed*_deltaTime;
-		}
-		return; // 他の処理はスキップ
-	}
 }
 
 void Player::Draw()
@@ -289,6 +282,20 @@ void Player::Draw()
 		srcY = 0;
 		break;
 	}
+	case PlayerState::Win:			// 勝利
+	{
+		animNum = 0;
+		handle = m_winHandle;
+		srcY = 0;
+		break;
+	}
+	case PlayerState::TimeUp:		// タイムアップ
+	{
+		animNum = 0;
+		handle = m_timeUpHandle;
+		srcY = 0;
+		break;
+	}
 	}
 
 	// アニメーションのX座標を求める
@@ -346,6 +353,14 @@ void Player::UpdateState(int _input)
 	bool attackTrigger = (_input & PAD_INPUT_A) && !(m_oldInput & PAD_INPUT_A);
 	// 弱攻撃のトリガーをチェック
 	bool weakAttackTrigger = (_input & PAD_INPUT_B) && !(m_oldInput & PAD_INPUT_B);
+
+	// 落下中は操作を受け付けない
+	if (m_state == PlayerState::Fall)
+	{
+		m_oldInput = _input; // 入力履歴だけ更新しておく
+		return;
+	}
+
 
 	// プレイヤーの状態を更新する
 	switch (m_state)
@@ -469,6 +484,34 @@ void Player::UpdateState(int _input)
 		}
 		break;
 	case PlayerState::Fall:
+		m_deltaTime++;
+		// 落下中の処理
+		if (!m_isFalling && m_pos.y > kFallStartY)
+		{
+			m_state = PlayerState::Fall;
+			m_animFrame = 0;
+			m_isFalling = true;
+			m_fallSpeed = 0.0f;
+			if (m_isFalling)
+			{
+				m_fallSpeed += kGravity * m_deltaTime;
+				if (m_fallSpeed > kMaxFallSpeed)
+				{
+					m_fallSpeed = kMaxFallSpeed;
+				}
+				m_pos.y += m_fallSpeed * m_deltaTime;
+			}
+			if (m_pos.y > kDrawStopY) // 画面外しきい値
+			{
+				m_isFallEnd = true;
+			}
+
+			return; // 他の処理はスキップ
+		}
+		break;
+	case PlayerState::Win:
+		break;
+	case PlayerState::TimeUp:
 		break;
 	}
 	m_oldInput = _input; // 前回の入力状態を更新
@@ -506,6 +549,12 @@ void Player::UpdateAnim()
 		break;
 	case PlayerState::Fall:
 		animFrames = kFallAnimNum;
+		break;
+	case PlayerState::Win:
+		animFrames = kWinAnimNum;
+		break;
+	case PlayerState::TimeUp:
+		animFrames = kTimeUpAnimNum;
 		break;
 	}
 

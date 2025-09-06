@@ -18,7 +18,6 @@ public:
 	// マンホールの位置を取得
 	Vec2 GetCenter()const;
 
-
 private:
 	// マンホールのハンドル
 	int m_handle1;
@@ -26,6 +25,9 @@ private:
 	// マンホールに当たっているか
 	bool m_leftTriggered;
 	bool m_rightTriggered;
+	// 危険を知らせる用のグラフィックはンドル
+	int m_warningHandle;
+
 	// 当たり判定用の矩形
 	Rect m_colRect;
 	Rect m_leftRect;

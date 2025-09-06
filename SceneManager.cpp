@@ -65,7 +65,7 @@ void SceneManager::Update()
 				m_fadeState = FADE_OUT;
 				m_fadeAlpha = 0;
 				m_nextScene = SCENE_TITLE;
-				m_title.Init();
+				m_main.StopBGM();
 			}
 			break;
 		}

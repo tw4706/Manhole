@@ -15,6 +15,9 @@ public:
 	void Update();
 	void Draw();
 
+	// ゲーム内BGMをストップ
+	void StopBGM();
+
 private:
 	// プレイヤーのグラフィックハンドル
 	int m_player1GraphHandle; 
@@ -34,6 +37,12 @@ private:
 	// プレイヤーの落下中のグラフィックハンドル
 	int m_player1FallGraphHandle;
 	int m_player2FallGraphHandle;
+	// プレイヤーの勝利ポーズのグラフィックハンドル
+	int m_player1WinGraphHandle;
+	int m_player2WinGraphHandle;
+	// 時間切れのグラフィックハンドル
+	int m_timeUp1GraphHandle;
+	int m_timeUp2GraphHandle;
 	// マンホールのグラフィックハンドル
 	int m_manhole1GraphHandle;
 	int m_manhole2GraphHandle;

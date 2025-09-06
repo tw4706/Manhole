@@ -13,7 +13,9 @@ enum class PlayerState
 	Attack,		// 強攻撃
 	WeakAttack,	// 弱攻撃
 	Hurt,		// 攻撃を受けた
-	Fall		// 落下中
+	Fall,		// 落下中
+	Win,		// 勝利
+	TimeUp		// タイムアップ
 };
 
 enum class AttackType
@@ -40,7 +42,9 @@ public:
 	Player();
 	~Player();
 
-	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle,int _wAttackHandle,int _runHandle,int _hurtHandle,int _fallHandle,bool _isTurn);
+	void Init(int _padType,Vec2 _firstPos,int _handle,int _attackHandle,
+		int _wAttackHandle,int _runHandle,int _hurtHandle,
+		int _fallHandle,int _winHandle,int _timeUpHandle,bool _isTurn);
 	void End();
 	void Update(float _deltaTime);
 	void Draw();
@@ -59,6 +63,9 @@ public:
 	bool IsHurt()const;
 	void SetGameOver(bool isOver) { m_gameOver = isOver; }			// ゲームオーバーの判定
 	void CheckManholeCollision(Manhole* pManhole);					// マンホールとの当たり判定
+	bool IsFallEnd()const { return m_isFallEnd; }					// 落下終了の判定
+	PlayerState GetState()const { return m_state; }				// プレイヤーの状態を取得
+	PlayerState SetState(PlayerState state) { return m_state = state; } // プレイヤーの状態を設定
 	// 先輩からのアドバイス:関数は動詞から始める
 	//　UpdateAnim
 	//　UpdateState
@@ -72,6 +79,10 @@ private:
 	int m_runHandle;			// 走るグラフィックのハンドル
 	int m_hurtHandle;			// 攻撃を受けた時のグラフィックのハンドル
 	int m_fallHandle;			// 落下中のグラフィックのハンドル
+	int m_winHandle;			// 勝利のグラフィックのハンドル
+	int m_timeUpHandle;			// タイムアップのグラフィックのハンドル
+	int m_weakBgHandle;			// 弱攻撃のサウンド
+	int m_attackBgHandle;		// 強攻撃のサウンド
 	Vec2 m_pos;					// 座標
 	Vec2 m_centerPos;			// 当たり判定のサイズ座標
 	int m_padType;				// パッドの種類
@@ -89,8 +100,8 @@ private:
 	bool m_gameOver;			// ゲームオーバーかどうか
 	int m_currentFrame;			// 現在のフレーム数
 	bool m_hasHit;				// 攻撃判定済みフラグ
-	int m_weakBgHandle;			// 弱攻撃のサウンド
-	int m_attackBgHandle;		// 強攻撃のサウンド
+	float m_deltaTime;			// 落下の経過時間
+	bool m_isFallEnd;			// 落下終了かどうか
 	PlayerState m_state;		// プレイヤーの状態
 	AttackType m_attackType;	// 攻撃の種類
 	Player* m_otherPlayer;		// 対戦相手のプレイヤー(攻撃の対象となる)

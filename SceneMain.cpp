@@ -19,6 +19,10 @@ SceneMain::SceneMain():
 	m_player2HurtGraphHandle(-1),
 	m_player1FallGraphHandle(-1),
 	m_player2FallGraphHandle(-1),
+	m_player1WinGraphHandle(-1),
+	m_player2WinGraphHandle(-1),
+	m_timeUp1GraphHandle(-1),
+	m_timeUp2GraphHandle(-1),
 	m_manhole1GraphHandle(-1),
 	m_manhole2GraphHandle(-1),
 	m_winPlayer1GraphHandle(-1),
@@ -80,6 +84,10 @@ void SceneMain::Init()
 	m_player2HurtGraphHandle = LoadGraph("data/Player/Player2.hurt.png");
 	m_player1FallGraphHandle = LoadGraph("data/Player/Fall.png");
 	m_player2FallGraphHandle = LoadGraph("data/Player/Fall1.png");
+	m_player1WinGraphHandle = LoadGraph("data/Player/Win1.png");
+	m_player2WinGraphHandle = LoadGraph("data/Player/Win2.png");
+	m_timeUp1GraphHandle = LoadGraph("data/Player/death1.png");
+	m_timeUp2GraphHandle = LoadGraph("data/Player/death2.png");
 	m_manhole1GraphHandle = LoadGraph("data/UI/Manhole1.png");
 	m_manhole2GraphHandle = LoadGraph("data/UI/Manhole2.png");
 	m_winPlayer1GraphHandle = LoadGraph("data/UI/Win1.png");
@@ -99,10 +107,10 @@ void SceneMain::Init()
 	m_roundTimer->Stop(); // タイマーを一時停止
 	m_player1->Init(DX_INPUT_PAD1,Vec2(400,480),m_player1GraphHandle,
 		m_player1AttackGraphHandle, m_player1WeakAttackGraphHandle,
-		m_player1RunGraphHandle,m_player1HurtGraphHandle,m_player1FallGraphHandle,false);
+		m_player1RunGraphHandle,m_player1HurtGraphHandle,m_player1FallGraphHandle, m_player1WinGraphHandle, m_timeUp1GraphHandle,false);
 	m_player2->Init(DX_INPUT_PAD2,Vec2(840, 480), m_player2GraphHandle,
 		m_player2AttackGraphHandle, m_player2WeakAttackGraphHandle,
-		m_player2RunGraphHandle, m_player2HurtGraphHandle, m_player2FallGraphHandle,true);
+		m_player2RunGraphHandle, m_player2HurtGraphHandle, m_player2FallGraphHandle,m_player2WinGraphHandle,m_timeUp2GraphHandle,true);
 	m_Bg->Init();
 	m_manhole->Init(m_manhole1GraphHandle,m_manhole2GraphHandle);
 }
@@ -125,6 +133,12 @@ void SceneMain::End()
 	DeleteGraph(m_player2RunGraphHandle);
 	DeleteGraph(m_player1HurtGraphHandle);
 	DeleteGraph(m_player2HurtGraphHandle);
+	DeleteGraph(m_player1FallGraphHandle);
+	DeleteGraph(m_player2FallGraphHandle);
+	DeleteGraph(m_player1WinGraphHandle);
+	DeleteGraph(m_player2WinGraphHandle);
+	DeleteGraph(m_timeUp1GraphHandle);
+	DeleteGraph(m_timeUp2GraphHandle);
 	DeleteGraph(m_manhole1GraphHandle);
 	DeleteGraph(m_manhole2GraphHandle);
 	DeleteGraph(m_winPlayer1GraphHandle);
@@ -178,37 +192,44 @@ void SceneMain::Update()
 
 	int currentTime = GetNowCount();
 	float deltaTime = (currentTime - m_timer) / 1000.0f;
+
 	m_timer = currentTime;
 	int pad1 = GetJoypadInputState(DX_INPUT_KEY_PAD1);
 	int pad2 = GetJoypadInputState(DX_INPUT_PAD2);
-	//printfDx("%d", pad);
+	// printfDx("%d", pad);
 	if (CheckHitKey(KEY_INPUT_R)||(pad1&PAD_INPUT_X)|| (pad2 & PAD_INPUT_X))
 	{
 		End();   // 現在のリソースを解放
 		Init();  // 再初期化
 	}
-	// ゲームのリスタート
+
 	if (m_gameOver)
 	{
-		// 勝者は動くことが可能
-		if (m_player2WinFlag)
+		// プレイヤー1が落ちた → プレイヤー2が勝利
+		if (m_player1->GetState() == PlayerState::Fall && m_player1->IsFallEnd())
 		{
 			m_player1->Update(deltaTime);
 			m_player2->Update(deltaTime);
+			m_player2->SetState(PlayerState::Win);
+			m_player2WinFlag = true;
 		}
-		else if (m_player1WinFlag)
+
+		// プレイヤー2が落ちた → プレイヤー1が勝利
+		if (m_player2->GetState() == PlayerState::Fall && m_player2->IsFallEnd())
 		{
 			m_player1->Update(deltaTime);
 			m_player2->Update(deltaTime);
+			m_player1->SetState(PlayerState::Win);
+			m_player1WinFlag = true;
 		}
+
 		StopSoundMem(m_bgmHandle);
-		// Rキーが押されたらリスタート
 		return;
 	}
 	m_roundTimer->Update(deltaTime);
 	if (m_roundTimer->IsTimeUp())
 	{
-		/*printfDx("時間切れ!");*/
+		// printfDx("時間切れ!");
 		if (m_roundTimer->IsTimeUp() && !m_gameOver)
 		{
 			Vec2 manholeCenter = m_manhole->GetCenter();
@@ -310,4 +331,9 @@ void SceneMain::Draw()
 #ifdef _DEBUG
 	DrawString(0, 0, "SceneMain", GetColor(255, 255, 255));
 #endif
+}
+
+void SceneMain::StopBGM()
+{
+	StopSoundMem(m_bgmHandle);
 }

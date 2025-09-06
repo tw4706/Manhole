@@ -35,7 +35,10 @@ void Title::Init()
 	m_titleLogoHandle = LoadGraph("data/UI/titleL.png");
     m_titleStrHandle = LoadGraph("data/UI/str.png");
     m_bgmHandle = LoadSoundMem("data/BGMÅESE/title.mp3");
-    PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);
+    if (!CheckSoundMem(m_bgmHandle)) // çƒê∂Ç≥ÇÍÇƒÇ¢Ç»Ç¢Ç»ÇÁ
+    {
+        PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);
+    }
     ChangeVolumeSoundMem(150, m_bgmHandle);
 }
 

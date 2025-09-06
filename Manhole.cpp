@@ -16,7 +16,8 @@ Manhole::Manhole():
 	m_handle1(-1),
 	m_handle2(-1),
 	m_leftTriggered(false), 
-	m_rightTriggered(false)
+	m_rightTriggered(false),
+	m_warningHandle(-1)
 {
 }
 
@@ -30,16 +31,17 @@ void Manhole::Init(int _handle1,int _handle2)
 	m_handle2 = _handle2;
 	m_leftRect.init(kManholeX1, kManholeY1, kManholeGraphWidth+20, kManholeGraphHeight);
 	m_rightRect.init(kManholeX2, kManholeY2, kManholeGraphWidth+20, kManholeGraphHeight);
+	m_warningHandle = LoadGraph("data/UI/Warning.png");
 }
 
 void Manhole::End()
 {
 
+
 }
 
 void Manhole::Update()
 {
-
 }
 
 void Manhole::Draw()
@@ -60,6 +62,7 @@ void Manhole::Draw()
 			m_handle2, TRUE);
 
 		//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
+			// ì_ñ≈åxçêÇÃï`âÊ
 
 
 #ifdef _DEBUG
