@@ -28,8 +28,12 @@ Manhole::Manhole():
 	m_warningHandle(-1),
 	m_blinkTimer(0.0f),
 	m_blinkFlag(false),
+	m_dangerSoundHandle(-1),
 	m_showLeftWarning(false),
-	m_showRightWarning(false)
+	m_showRightWarning(false),
+	m_leftPlayed(false),
+	m_rightPlayed(false),
+	m_stopSoundFlag(false)
 {
 }
 
@@ -44,6 +48,14 @@ void Manhole::Init(int _handle1,int _handle2)
 	m_leftRect.init(kManholeX1, kManholeY1, kManholeGraphWidth+20, kManholeGraphHeight);
 	m_rightRect.init(kManholeX2, kManholeY2, kManholeGraphWidth+20, kManholeGraphHeight);
 	m_warningHandle = LoadGraph("data/UI/Warning.png");
+	m_dangerSoundHandle = LoadSoundMem("data/BGM・SE/warning.mp3");
+	ChangeVolumeSoundMem(180, m_dangerSoundHandle);
+	m_blinkFlag = false;
+	m_blinkTimer = 0;
+	m_showLeftWarning = false;
+	m_showRightWarning = false;
+	m_leftPlayed = false;
+	m_rightPlayed = false;
 }
 
 void Manhole::End()
@@ -105,7 +117,7 @@ void Manhole::Draw()
 
 	//printfDx("pos.x=%f,pos.y=%f\n", pos.x, pos.y);
 
-	if (m_warningHandle != -1)
+	if (!m_stopSoundFlag&&m_warningHandle != -1)
 	{
 		if (m_showLeftWarning)
 		{
@@ -116,7 +128,17 @@ void Manhole::Draw()
 				static_cast<int>(leftCenter.x) + kRight,
 				static_cast<int>(leftCenter.y) + kBottom,
 				m_warningHandle, TRUE);
-			printfDx("左警告表示中\n");
+			//printfDx("左警告表示中\n");
+
+			if (!m_leftPlayed)
+			{
+				PlaySoundMem(m_dangerSoundHandle, DX_PLAYTYPE_BACK);
+				m_leftPlayed = true;
+			}
+		}
+		else
+		{
+			m_leftPlayed = false; // 表示されていないときはリセット
 		}
 
 		if (m_showRightWarning)
@@ -128,7 +150,16 @@ void Manhole::Draw()
 				static_cast<int>(rightCenter.x) + kRight,
 				static_cast<int>(rightCenter.y) + kBottom,
 				m_warningHandle, TRUE);
-			printfDx("右警告表示中\n");
+			//printfDx("右警告表示中\n");
+			if (!m_rightPlayed)
+			{
+				PlaySoundMem(m_dangerSoundHandle, DX_PLAYTYPE_BACK);
+				m_rightPlayed = true;
+			}
+		}
+		else
+		{
+			m_rightPlayed = false; // 表示されていないときはリセット
 		}
 	}
 
@@ -174,4 +205,10 @@ Vec2 Manhole::GetCenter()const
 	Vec2 leftCenter = m_leftRect.GetCenter();
 	Vec2 rightCenter = m_rightRect.GetCenter();
 	return Vec2{ (leftCenter.x + rightCenter.x) / 2.0f, (leftCenter.y + rightCenter.y) / 2.0f };
+}
+
+void Manhole::SetGameOver(bool _isOver)
+{
+	m_stopSoundFlag = true;
+	StopSoundMem(m_dangerSoundHandle);
 }

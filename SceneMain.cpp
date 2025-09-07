@@ -225,6 +225,7 @@ void SceneMain::Update()
 		m_gameOver = true;
 		m_player1->SetGameOver(true);
 		m_player2->SetGameOver(false);
+		m_manhole->SetGameOver(true);
 		m_player2WinFlag = true;
 	}
 	else if(CheckHitKey(KEY_INPUT_B))
@@ -232,6 +233,7 @@ void SceneMain::Update()
 		m_gameOver = true;
 		m_player1->SetGameOver(false);
 		m_player2->SetGameOver(true);
+		m_manhole->SetGameOver(true);
 		m_player1WinFlag = true;
 	}
 	
@@ -315,6 +317,7 @@ void SceneMain::Update()
 			m_player1->SetGameOver(true);
 			m_player1->SetState(PlayerState::Fall);
 			m_player2->SetGameOver(false);
+			m_manhole->SetGameOver(true);
 			m_roundTimer->Stop();
 			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
 		}
@@ -328,6 +331,7 @@ void SceneMain::Update()
 			m_player2->SetGameOver(true);
 			m_player2->SetState(PlayerState::Fall);
 			m_player1->SetGameOver(false);
+			m_manhole->SetGameOver(true);
 			m_roundTimer->Stop();
 			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
 		}
