@@ -9,7 +9,7 @@ public:
 
 	void Init(int _handle1,int _handle2);
 	void End();
-	void Update();
+	void Update(const Vec2& _player1Pos, const Vec2& _player2Pos);
 	void Draw();
 
 	// プレイヤーがマンホールに当たっているかどうか
@@ -27,6 +27,13 @@ private:
 	bool m_rightTriggered;
 	// 危険を知らせる用のグラフィックはンドル
 	int m_warningHandle;
+	// 点滅用のタイマー
+	int m_blinkTimer;
+	// 点滅用のフラグ
+	bool m_blinkFlag;
+	// 左右の表示更新
+	bool m_showLeftWarning;
+	bool m_showRightWarning;
 
 	// 当たり判定用の矩形
 	Rect m_colRect;

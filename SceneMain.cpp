@@ -39,6 +39,7 @@ SceneMain::SceneMain():
 	m_bgmHandle(-1),
 	m_winBgmHandle(-1),
 	m_gameOverBgHandle(-1),
+	m_bgmEndFlag(false),
 	m_player1(nullptr),
 	m_player2(nullptr),
 	m_Bg(nullptr),
@@ -68,6 +69,7 @@ void SceneMain::Init()
 	m_isStartSeq = true;
 	// プレイヤーのゲームオーバーフラグを初期化
 	m_gameOver = false;
+	m_bgmEndFlag = false;
 	// プレイヤーの勝利フラグを初期化
 	m_player1WinFlag = false;
 	m_player2WinFlag = false;
@@ -99,6 +101,7 @@ void SceneMain::Init()
 	m_bgmHandle = LoadSoundMem("data/BGM・SE/game.mp3");
 	ChangeVolumeSoundMem(110, m_bgmHandle);          // 音量の調整
 	PlaySoundMem(m_bgmHandle, DX_PLAYTYPE_LOOP);     // ループ再生
+	m_winBgmHandle = LoadSoundMem("data/BGM・SE/win.mp3");
 	m_gameOverBgHandle = LoadSoundMem("data/BGM・SE/gameOver.mp3");
 	ChangeVolumeSoundMem(150, m_gameOverBgHandle);
 
@@ -148,12 +151,55 @@ void SceneMain::End()
 	delete m_roundTimer;
 	DeleteSoundMem(m_gameStartSoundHandle);
 	DeleteSoundMem(m_bgmHandle);
+	DeleteSoundMem(m_winBgmHandle);
 	StopSoundMem(m_gameOverBgHandle);
 	DeleteSoundMem(m_gameOverBgHandle);
 }
 
 void SceneMain::Update()
 {
+	Vec2 p1Center = m_player1->GetCollisionRect().GetCenter();
+	Vec2 p2Center = m_player2->GetCollisionRect().GetCenter();
+
+	if (m_roundTimer->IsTimeUp())
+	{
+		// printfDx("時間切れ!");
+		if (m_roundTimer->IsTimeUp() && !m_gameOver)
+		{
+			Vec2 manholeCenter = m_manhole->GetCenter();
+			Vec2 p1Center = m_player1->GetCollisionRect().GetCenter();
+			Vec2 p2Center = m_player2->GetCollisionRect().GetCenter();
+
+			float dist1 = fabs(p1Center.x - manholeCenter.x);
+			float dist2 = fabs(p2Center.x - manholeCenter.x);
+
+			if (dist1 > dist2)
+			{
+				m_player1->SetState(PlayerState::TimeUp); // 敗者
+				m_player2->SetState(PlayerState::Win);    // 勝者
+
+				m_player2WinFlag = true;
+			}
+			else if (dist1 < dist2)
+			{
+				m_player1->SetState(PlayerState::Win);    // 勝者
+				m_player2->SetState(PlayerState::TimeUp); // 敗者
+
+				m_player1WinFlag = true;
+			}
+			else
+			{
+				m_player1->SetState(PlayerState::TimeUp);
+				m_player2->SetState(PlayerState::TimeUp);
+			}
+
+			m_gameOver = true;
+			m_roundTimer->Stop();
+			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
+			return;
+		}
+	}
+
 	if (m_isStartSeq)
 	{
 		m_startTimer++;
@@ -205,93 +251,86 @@ void SceneMain::Update()
 
 	if (m_gameOver)
 	{
-		// プレイヤー1が落ちた → プレイヤー2が勝利
-		if (m_player1->GetState() == PlayerState::Fall && m_player1->IsFallEnd())
+		m_player1->Update(deltaTime);
+		m_player2->Update(deltaTime);
+		if (!m_bgmEndFlag)
 		{
-			m_player1->Update(deltaTime);
-			m_player2->Update(deltaTime);
-			m_player2->SetState(PlayerState::Win);
-			m_player2WinFlag = true;
-		}
+			// プレイヤー1が落ちた → プレイヤー2が勝利
+			if (m_player2WinFlag)
+			{
+				if (m_player1->GetState() == PlayerState::Fall && m_player1->IsFallEnd())
+				{
+					//printfDx("プレイヤー2の勝利!");
+					// 落下演出が終わったら勝利BGMを流す
+					if (!m_bgmEndFlag && CheckSoundMem(m_gameOverBgHandle) == 0)
+					{
+						PlaySoundMem(m_winBgmHandle, DX_PLAYTYPE_LOOP);
+						ChangeVolumeSoundMem(150, m_winBgmHandle);
+						m_player2->SetState(PlayerState::Win);
+						m_bgmEndFlag = true;
+					}
+				}
+			}
+			// プレイヤー2が落ちた → プレイヤー1が勝利
+			else if (m_player1WinFlag)
+			{
+				if (m_player2->GetState() == PlayerState::Fall && m_player2->IsFallEnd())
+				{
+					//printfDx("プレイヤー1の勝利！");
+					// 落下演出が終わったら勝利BGMを流す
+					if (!m_bgmEndFlag && CheckSoundMem(m_gameOverBgHandle) == 0)
+					{
+						PlaySoundMem(m_winBgmHandle, DX_PLAYTYPE_BACK);
+						ChangeVolumeSoundMem(150, m_winBgmHandle);
+						m_player1->SetState(PlayerState::Win);
+						m_bgmEndFlag = true;
+					}
+				}
+			}
 
-		// プレイヤー2が落ちた → プレイヤー1が勝利
-		if (m_player2->GetState() == PlayerState::Fall && m_player2->IsFallEnd())
-		{
-			m_player1->Update(deltaTime);
-			m_player2->Update(deltaTime);
-			m_player1->SetState(PlayerState::Win);
-			m_player1WinFlag = true;
+			m_Bg->Update();
+			m_manhole->Update(p1Center,p2Center);
 		}
 
 		StopSoundMem(m_bgmHandle);
 		return;
 	}
 	m_roundTimer->Update(deltaTime);
-	if (m_roundTimer->IsTimeUp())
-	{
-		// printfDx("時間切れ!");
-		if (m_roundTimer->IsTimeUp() && !m_gameOver)
-		{
-			Vec2 manholeCenter = m_manhole->GetCenter();
-			Vec2 p1Center = m_player1->GetCollisionRect().GetCenter();
-			Vec2 p2Center = m_player2->GetCollisionRect().GetCenter();
-
-			float dist1 = fabs(p1Center.x - manholeCenter.x);
-			float dist2 = fabs(p2Center.x - manholeCenter.x);
-
-			if (dist1 > dist2)
-			{
-				m_player1->SetGameOver(true);
-				m_player2->SetGameOver(false);
-				m_player2WinFlag = true;
-			}
-			else if (dist1 < dist2)
-			{
-				m_player1->SetGameOver(false);
-				m_player2->SetGameOver(true);
-				m_player1WinFlag = true;
-			}
-			else
-			{
-				m_player1->SetGameOver(true);
-				m_player2->SetGameOver(true);
-			}
-
-			m_gameOver = true;
-			m_roundTimer->Stop();
-			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
-		}
-
-	}
+	
 	m_player1->SetOtherPlayer(m_player2);
 	m_player2->SetOtherPlayer(m_player1);
 	m_player2->Update(deltaTime);
 	m_player1->Update(deltaTime);
 	m_Bg->Update();
-	m_manhole->Update();
-	// プレイヤー1が左マンホールに触れたら2の勝利
-	if (m_manhole->CheckLeftCollision(m_player1->GetCollisionRect()))
+	m_manhole->Update(p1Center,p2Center);
+	if (!m_gameOver && !m_roundTimer->IsTimeUp())
 	{
-		m_player1->CheckManholeCollision(m_manhole);
-		//printfDx("プレイヤー2の勝利!");
-		m_gameOver = true;
-		m_player2WinFlag = true;
-		m_player1->SetGameOver(true);
-		m_player2->SetGameOver(false);
-		m_roundTimer->Stop();
-		PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
-	}
-	// プレイヤー2が右マンホールに触れたら1の勝利
-	else if (m_manhole->CheckRightCollision(m_player2->GetCollisionRect()))
-	{
-		m_player2->CheckManholeCollision(m_manhole);
-		//printfDx("プレイヤー1の勝利！");
-		m_gameOver = true;
-		m_player1WinFlag = true;
-		m_player2->SetGameOver(true);
-		m_player1->SetGameOver(false);
-		m_roundTimer->Stop();
-		PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
+		// プレイヤー1が左マンホールに触れたら2の勝利
+		if (m_manhole->CheckLeftCollision(m_player1->GetCollisionRect()))
+		{
+			m_player1->CheckManholeCollision(m_manhole);
+			//printfDx("プレイヤー2の勝利!");
+			m_gameOver = true;
+			m_player2WinFlag = true;
+			m_player1->SetGameOver(true);
+			m_player1->SetState(PlayerState::Fall);
+			m_player2->SetGameOver(false);
+			m_roundTimer->Stop();
+			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
+		}
+		// プレイヤー2が右マンホールに触れたら1の勝利
+		else if (m_manhole->CheckRightCollision(m_player2->GetCollisionRect()))
+		{
+			m_player2->CheckManholeCollision(m_manhole);
+			//printfDx("プレイヤー1の勝利！");
+			m_gameOver = true;
+			m_player1WinFlag = true;
+			m_player2->SetGameOver(true);
+			m_player2->SetState(PlayerState::Fall);
+			m_player1->SetGameOver(false);
+			m_roundTimer->Stop();
+			PlaySoundMem(m_gameOverBgHandle, DX_PLAYTYPE_BACK);
+		}
 	}
 }
 

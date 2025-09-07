@@ -40,7 +40,7 @@ namespace
 	// 地面の当たり判定
 	constexpr int kGround = 400;
 	// 落下速度の最大値
-	constexpr float kMaxFallSpeed = 15.0f;
+	constexpr float kMaxFallSpeed = 40.0f;
 	// 落下開始のY座標
 	constexpr int kFallStartY = 400;
 	// 一定の座標まで行くと描画をストップ
@@ -199,6 +199,23 @@ void Player::Update(float _deltaTime)
 	{
 		m_pos.y = kGround;
 	}
+
+	// 落下中の処理（Win判定のために毎フレーム動かす）
+	if (m_state == PlayerState::Fall)
+	{
+		m_fallSpeed += kGravity * _deltaTime;
+		if (m_fallSpeed > kMaxFallSpeed)
+		{
+			m_fallSpeed = kMaxFallSpeed;
+		}
+		m_pos.y += m_fallSpeed * _deltaTime;
+
+		if (m_pos.y > kDrawStopY)
+		{
+			m_isFallEnd = true;
+		}
+
+	}
 	// 強攻撃の攻撃判定（Attack状態）
 	if (m_state == PlayerState::Attack &&
 		m_animFrame >= kAttackActiveStartFrame &&
@@ -216,6 +233,15 @@ void Player::Update(float _deltaTime)
 	{
 		KnockBack();
 	}
+
+	// 勝敗がついていたら操作を無効化（ただしアニメーションは進める）
+	if (m_gameOver && m_state != PlayerState::Win && m_state != PlayerState::Fall)
+	{
+		// アニメーションだけ更新
+		UpdateAnim();
+		return;
+	}
+
 }
 
 void Player::Draw()
@@ -284,14 +310,14 @@ void Player::Draw()
 	}
 	case PlayerState::Win:			// 勝利
 	{
-		animNum = 0;
+		animNum = (m_animFrame / kAnimWaitFrame) % kWinAnimNum;
 		handle = m_winHandle;
 		srcY = 0;
 		break;
 	}
 	case PlayerState::TimeUp:		// タイムアップ
 	{
-		animNum = 0;
+		animNum = (m_animFrame / kAnimWaitFrame) % kTimeUpAnimNum;
 		handle = m_timeUpHandle;
 		srcY = 0;
 		break;
@@ -484,30 +510,6 @@ void Player::UpdateState(int _input)
 		}
 		break;
 	case PlayerState::Fall:
-		m_deltaTime++;
-		// 落下中の処理
-		if (!m_isFalling && m_pos.y > kFallStartY)
-		{
-			m_state = PlayerState::Fall;
-			m_animFrame = 0;
-			m_isFalling = true;
-			m_fallSpeed = 0.0f;
-			if (m_isFalling)
-			{
-				m_fallSpeed += kGravity * m_deltaTime;
-				if (m_fallSpeed > kMaxFallSpeed)
-				{
-					m_fallSpeed = kMaxFallSpeed;
-				}
-				m_pos.y += m_fallSpeed * m_deltaTime;
-			}
-			if (m_pos.y > kDrawStopY) // 画面外しきい値
-			{
-				m_isFallEnd = true;
-			}
-
-			return; // 他の処理はスキップ
-		}
 		break;
 	case PlayerState::Win:
 		break;
@@ -559,9 +561,13 @@ void Player::UpdateAnim()
 	}
 
 	// アニメーションフレームを更新
-	if (m_animFrame++ >= animFrames * kAnimWaitFrame)
+	if (animFrames > 0)
 	{
-		m_animFrame = 0;
+		m_animFrame++;
+		if (m_animFrame >= animFrames * kAnimWaitFrame)
+		{
+			m_animFrame = 0;
+		}
 	}
 }
 
@@ -573,7 +579,7 @@ bool Player::IsHurt() const
 
 void Player::CheckManholeCollision(Manhole* manhole)
 {
-	if (m_state == PlayerState::Fall || m_gameOver)return;
+	if (m_state == PlayerState::Fall || m_state == PlayerState::TimeUp || m_gameOver)return;
 
 	bool hitLeft = manhole->CheckLeftCollision(m_colRect);
 	bool hitRight = manhole->CheckRightCollision(m_colRect);

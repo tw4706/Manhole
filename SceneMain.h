@@ -71,6 +71,8 @@ private:
 	int m_winBgmHandle;
 	// ゲームオーバーのサウンド
 	int m_gameOverBgHandle;
+	// BGMが終わったかどうか
+	bool m_bgmEndFlag;
 
 	// プレイヤー
 	Player*m_player1;
