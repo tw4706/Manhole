@@ -27,6 +27,8 @@ namespace
 	// UŒ‚‚ğó‚¯‚½Œã‚Ì–³“GŠÔ
 	constexpr int kHurtDuration = 40;
 	constexpr int kWeakHurtDuration = 20;
+	// UŒ‚‚Ìd’¼ŠÔ
+	constexpr int kAttack
 	// “–‚½‚è”»’è‚Ì”¼Œa
 	constexpr float kDefaultRadius = 16.0f;
 	// ƒvƒŒƒCƒ„[‚ÌˆÚ“®‘¬“x
