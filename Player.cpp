@@ -34,7 +34,7 @@ namespace
 	// プレイヤーの拡大率
 	constexpr float kScale = 2.0f;
 	// ノックバックの距離
-	constexpr int knockBackDist = 70;
+	constexpr int knockBackDist = 90;
 	// 重力
 	constexpr float kGravity = 1.5f;
 	// 地面の当たり判定
