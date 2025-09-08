@@ -12,7 +12,7 @@ namespace
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	// ウインドウモード設定
-	ChangeWindowMode(true);
+	ChangeWindowMode(false);
 	// ウインドウのタイトル変更
 	SetMainWindowText("ManholeFight");
 	// 画面のサイズ変更
