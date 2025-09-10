@@ -148,6 +148,10 @@ void SceneMain::End()
 	DeleteGraph(m_winPlayer2GraphHandle);
 	DeleteGraph(m_gameStartUI1Handle);
 	DeleteGraph(m_gameStartUI2Handle);
+	delete m_player1;
+	delete m_player2;
+	delete m_Bg;
+	delete m_manhole;
 	delete m_roundTimer;
 	DeleteSoundMem(m_gameStartSoundHandle);
 	DeleteSoundMem(m_bgmHandle);
